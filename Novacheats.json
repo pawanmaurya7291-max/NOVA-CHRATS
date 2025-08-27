@@ -1,16 +1,14 @@
-[
-    {
-        "device_id": "292ecb3ed9bd06d7",
-        "username": "ADMIN",
-        "password": "NOVA",
-        "expirydate": "15-06-2030",
-        "Allowoffline": true
-    },
-    {
-        "device_id": "292ecb3ed9bd06d7",
-        "username": "1",
-        "password": "2",
-        "expirydate": "15-10-2025",
-        "Allowoffline": false
-    }
-]
+  {
+    "id": "6d95fal7c7e40bea",
+    "username": "dpmods",
+    "password": "dpmods",
+    "expiresAt": "2025-12-31",
+    "allowOffline": true
+  },
+  {
+    "id": "292ecb3ed9bd06d7",
+    "username": "a",
+    "password": "b",
+    "expiresAt": "2025-11-30",
+    "allowOffline": false
+  }
