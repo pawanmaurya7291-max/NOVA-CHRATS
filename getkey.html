@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body style="text-align:center; background:black; color:white;">
+
+<h1>GET KEY</h1>
+
+<button onclick="start()">Get Key</button>
+
+<div id="key"></div>
+
+<script>
+function start() {
+  window.open("https://your-short-link.com");
+
+  setTimeout(() => {
+    fetch("https://yourserver.com/generate.php")
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById("key").innerHTML = "KEY: " + data;
+    });
+  }, 10000);
+}
+</script>
+
+</body>
+</html>
