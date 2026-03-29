@@ -1,25 +1,72 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Pro Key System</title>
+</head>
+
 <body style="text-align:center; background:black; color:white;">
 
-<h1>GET KEY</h1>
+<h1>GET YOUR KEY</h1>
 
-<button onclick="start()">Get Key</button>
+<button onclick="getLink()">Get Key</button>
 
-<div id="key"></div>
+<p id="status"></p>
+<div id="keyBox" style="display:none;">
+  <h2>Your Key:</h2>
+  <p id="key"></p>
+</div>
 
 <script>
-function start() {
-  window.open("https://your-short-link.com");
 
-  setTimeout(() => {
-    fetch("https://yourserver.com/generate.php")
-    .then(res => res.text())
-    .then(data => {
-      document.getElementById("key").innerHTML = "KEY: " + data;
-    });
-  }, 10000);
+let apiToken = "YOUR_API_TOKEN"; // yahan apna API token daalo
+let finalUrl = "https://getkey.page.gd"; // tumhara GitHub ya landing page
+
+function getLink() {
+
+  document.getElementById("status").innerText = "Generating Link...";
+
+  fetch(`https://shrinkme.io/api?api=${apiToken}&url=${finalUrl}`)
+  .then(res => res.json())
+  .then(data => {
+
+    let shortLink = data.shortenedUrl;
+
+    // open short link
+    window.open(shortLink, "_blank");
+
+    startTimer();
+
+  });
+
 }
+
+function startTimer() {
+
+  let timeLeft = 15;
+
+  let timer = setInterval(() => {
+
+    document.getElementById("status").innerText = "Complete link to get key... " + timeLeft;
+
+    timeLeft--;
+
+    if (timeLeft < 0) {
+      clearInterval(timer);
+
+      fetch("https://getkey.page.gd/generate.php")
+      .then(res => res.text())
+      .then(key => {
+        document.getElementById("key").innerText = key;
+        document.getElementById("keyBox").style.display = "block";
+        document.getElementById("status").innerText = "Key Generated ✅";
+      });
+
+    }
+
+  }, 1000);
+
+}
+
 </script>
 
 </body>
