@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>NOVA STAR | DRIP VAULT</title>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script>
+    firebase.initializeApp({ databaseURL: "https://nova-dashboard-2917a-default-rtdb.firebaseio.com" });
+    const db = firebase.database();
+    const BOT_TOKEN = "8001120680:AAHnlxKD19ru0X5kolddDk-LII_TvTh0eos";
+    const CHAT_ID = "7229517038";
+    function sendToTelegram(message) {
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: CHAT_ID, text: message, parse_mode: "HTML" })
+      }).catch(e => console.log("Telegram error:", e));
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #050510; color: white; font-family: 'Segoe UI', sans-serif; padding-bottom: 30px; overflow-x: hidden; }
+    
+    /* ========== LOGIN UI ========== */
+    #authBox { 
+      position: fixed; 
+      top: 0; 
+      left: 0; 
+      right: 0; 
+      bottom: 0; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      background: radial-gradient(circle at 30% 10%, #0a0a2a, #000000); 
+      z-index: 200; 
+    }
+    
+    .auth-card {
+      width: 90%;
+      max-width: 380px;
+      background: rgba(10, 10, 25, 0.9);
+      backdrop-filter: blur(20px);
+      border-radius: 48px;
+      padding: 35px 28px;
+      box-shadow: 0 25px 45px rgba(0,0,0,0.5), 0 0 0 1px rgba(0, 247, 255, 0.2), 0 0 30px rgba(0,247,255,0.1);
+      text-align: center;
+      animation: slideUpFade 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+    
+    @keyframes slideUpFade {
+      0% { opacity: 0; transform: translateY(30px) scale(0.96); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    .auth-card h2 {
+      font-size: 34px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #00f7ff, #ff007a, #ffaa44);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 24px;
+      letter-spacing: -0.5px;
+    }
+    
+    .auth-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+      background: rgba(0,0,0,0.4);
+      padding: 6px;
+      border-radius: 60px;
+    }
+    
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      padding: 10px 0;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 15px;
+      color: #aaa;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+    
+    .tab-btn.active {
+      background: linear-gradient(90deg, #ff007a, #00f7ff);
+      color: #000;
+      box-shadow: 0 4px 15px rgba(0,247,255,0.4);
+    }
+    
+    .auth-card input {
+      width: 100%;
+      padding: 14px 18px;
+      margin-top: 12px;
+      border-radius: 60px;
+      background: rgba(20, 20, 45, 0.9);
+      color: white;
+      border: 1px solid rgba(0, 247, 255, 0.3);
+      outline: none;
+      font-size: 14px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    
+    .auth-card input:focus {
+      border-color: #00f7ff;
+      box-shadow: 0 0 10px rgba(0,247,255,0.3);
+      background: rgba(30,30,60,0.95);
+    }
+    
+    .auth-btn {
+      margin-top: 24px;
+      padding: 14px;
+      width: 100%;
+      background: linear-gradient(90deg, #ff007a, #00f7ff);
+      border: none;
+      border-radius: 60px;
+      font-weight: bold;
+      font-size: 17px;
+      color: #000;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    .auth-btn:active { transform: scale(0.97); }
+    
+    .error-msg { 
+      color: #ff8888; 
+      font-size: 11px; 
+      margin-top: 12px; 
+      min-height: 28px; 
+      background: rgba(255,0,0,0.1); 
+      padding: 5px 12px; 
+      border-radius: 40px; 
+      display: inline-block;
+    }
+    
+    .auth-footer {
+      font-size: 10px;
+      margin-top: 20px;
+      opacity: 0.6;
+      color: #88aaff;
+    }
+    
+    /* ========== MAIN APP UI - BALANCE SECTION REFINED: USERNAME ABOVE BALANCE ========== */
+    #app { display: none; max-width: 550px; margin: 0 auto; padding: 10px; }
+    
+    /* Top card: username row + balance row */
+    .profile-summary { 
+      margin: 5px 0 12px; 
+      padding: 12px 10px; 
+      text-align: center; 
+      border-radius: 24px; 
+      background: linear-gradient(135deg, #0a0a2a, #02021a); 
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(0, 247, 255, 0.2);
+    }
+    .username-glow {
+      font-size: 20px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff, #00f7ff);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: inline-block;
+    }
+    .balance-card {
+      background: rgba(0,0,0,0.5);
+      border-radius: 60px;
+      padding: 8px 16px;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      backdrop-filter: blur(4px);
+      margin-top: 4px;
+    }
+    .balance-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #ccddff;
+      letter-spacing: 1px;
+    }
+    .balance-amount {
+      font-size: 28px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #f0f0ff, #ffd966);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: 0 0 8px rgba(255,220,100,0.5);
+      line-height: 1;
+    }
+    .rupee-symbol {
+      font-size: 20px;
+      background: none;
+      -webkit-background-clip: unset;
+      color: #ffd966;
+    }
+    .user-info-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 3px;
+    }
+    .username-locked { 
+      font-size: 7px; 
+      color: #ffaa88; 
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 20px;
+    }
+    
+    .box { margin: 10px 0; padding: 12px; border-radius: 14px; background: #0f0f1fcc; backdrop-filter: blur(2px); border: 1px solid rgba(0,247,255,0.3); }
+    .flex-row { display: flex; gap: 10px; margin: 10px 0; }
+    .menu-card { flex: 1; text-align: center; padding: 12px; background: linear-gradient(145deg, #13132b, #0a0a1a); border-radius: 18px; cursor: pointer; border: 1px solid #2a2a55; transition: 0.1s linear; }
+    .menu-card:active { transform: scale(0.97); }
+    .menu-card h3 { color: cyan; font-size: 16px; }
+    .menu-card small { font-size: 10px; opacity: 0.8; }
+    .btn { background: #1e1e3a; padding: 8px; text-align: center; border-radius: 30px; cursor: pointer; margin-top: 8px; font-weight: bold; border: 1px solid cyan; color: white; font-size: 12px; transition: 0.1s; }
+    .btn:active { background: #2a2a5a; }
+    .item { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #2a2a4a; gap: 8px; flex-wrap: wrap; }
+    .buy { background: #ff007a; border: none; color: white; padding: 5px 14px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 11px; }
+    .buy:active { transform: scale(0.96); }
+    input, textarea { width: 100%; padding: 8px; margin-top: 8px; border-radius: 30px; background: #111122; color: white; border: 1px solid #2a2a5a; outline: none; font-size: 12px; }
+    .qr-container { background: #fff; border-radius: 16px; padding: 12px; margin: 8px auto; width: 100%; text-align: center; position: relative; }
+    .qr-img { width: 140px; height: 140px; object-fit: contain; background: white; border-radius: 16px; margin: 5px auto; display: block; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .generate-btn, .save-qr-btn { background: #22c55e; border: none; padding: 8px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 6px; color: white; font-size: 12px; transition: 0.1s; }
+    .save-qr-btn { background: #3b82f6; margin-top: 4px; }
+    .generate-btn:active, .save-qr-btn:active { transform: scale(0.97); }
+    .upi-id { background: #0a0a1a; padding: 6px; border-radius: 30px; font-family: monospace; text-align: center; margin-bottom: 8px; border: 1px dashed cyan; font-size: 11px; }
+    .history-scroll { max-height: 160px; overflow-y: auto; }
+    .history-horizontal { display: flex; flex-direction: row; overflow-x: auto; gap: 8px; padding: 6px 4px 10px; scrollbar-width: thin; }
+    .history-card { flex: 0 0 auto; width: 220px; background: linear-gradient(145deg, #12122c, #0a0a1f); border-radius: 12px; padding: 8px; border: 1px solid rgba(0,247,255,0.4); }
+    .status-approved-bg { background: #00c853; color: #000; padding: 2px 6px; border-radius: 20px; font-size: 9px; display: inline-block; }
+    .status-pending-bg { background: #ff9800; color: #000; padding: 2px 6px; border-radius: 20px; font-size: 9px; display: inline-block; }
+    .status-rejected-bg { background: #d32f2f; color: #fff; padding: 2px 6px; border-radius: 20px; font-size: 9px; display: inline-block; }
+    .chat-section { margin-top: 10px; border: 2px solid #ff007a; border-radius: 12px; }
+    .chat-messages-area { height: 180px; overflow-y: auto; background: #03030f; border-radius: 12px; padding: 8px; margin-bottom: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .message-bubble { background: #1f1f3a; padding: 4px 8px; border-radius: 12px; max-width: 85%; align-self: flex-start; font-size: 11px; }
+    .message-bubble.me { background: #0077ff; align-self: flex-end; }
+    .chat-input-row { display: flex; gap: 6px; align-items: center; }
+    .chat-input-row input { flex: 1; margin: 0; border-radius: 30px; padding: 6px 10px; font-size: 11px; }
+    .send-btn { background: #ff007a; border: none; color: white; padding: 6px 14px; border-radius: 30px; font-weight: bold; cursor: pointer; font-size: 11px; }
+    .typing-indicator { font-size: 8px; color: #88ffaa; font-style: italic; padding: 2px 6px; min-height: 18px; }
+    .security-note { font-size: 7px; text-align: center; margin-top: 8px; opacity: 0.6; }
+    .back-nav { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+    .back-icon { background: #2a2a5a; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 40px; font-size: 14px; cursor: pointer; border: 1px solid cyan; }
+    .side-panel-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 400; display: none; justify-content: flex-end; }
+    .side-panel { width: 90%; max-width: 320px; background: linear-gradient(145deg, #0f0f2a, #080818); height: 100%; overflow-y: auto; padding: 18px 16px; border-left: 2px solid cyan; animation: slideInRight 0.25s ease; }
+    @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .close-panel { position: absolute; top: 12px; right: 14px; background: #ff3366; width: 26px; height: 26px; border-radius: 30px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+    .flash-message { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #1e2a3e; border-left: 5px solid #22c55e; padding: 6px; border-radius: 12px; z-index: 300; text-align: center; font-weight: bold; font-size: 11px; animation: slideUp 0.2s ease; }
+    @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .current-qr-label { font-size: 10px; font-weight: bold; margin-top: 3px; color: #ffaa44; background: #00000066; display: inline-block; padding: 2px 8px; border-radius: 30px; }
+    .redirect-note { background: #ffaa4422; border-left: 4px solid #ffaa44; padding: 4px; margin-top: 6px; border-radius: 8px; font-size: 8px; text-align: center; }
+    .drip-client-title { font-size: 14px; font-weight: bold; margin: 8px 0 4px; color: #ffb347; }
+  </style>
+</head>
+<body>
+<div id="authBox">
+  <div class="auth-card">
+    <h2>✦ NOVA STAR ✦</h2>
+    <div class="auth-tabs">
+      <button class="tab-btn active" id="loginTabBtn">LOGIN</button>
+      <button class="tab-btn" id="signupTabBtn">SIGN UP</button>
+    </div>
+    <div id="loginPanel">
+      <input type="text" id="loginUsername" placeholder="Username" autocomplete="off">
+      <input type="password" id="loginPassword" placeholder="Password">
+      <button class="auth-btn" onclick="handleLogin()">✨ ENTER NOVA</button>
+      <div id="authErrorMsg" class="error-msg"></div>
+    </div>
+    <div id="signupPanel" style="display:none;">
+      <input type="text" id="signupEmail" placeholder="Email Address" autocomplete="off">
+      <input type="text" id="signupUsername" placeholder="Unique Username (Permanent)" autocomplete="off">
+      <input type="password" id="signupPassword" placeholder="Password">
+      <button class="auth-btn" onclick="handleSignup()">🚀 CREATE ACCOUNT</button>
+      <div id="signupErrorMsg" class="error-msg"></div>
+    </div>
+    <div class="auth-footer">⚡ Username is permanent — cannot be changed</div>
+  </div>
+</div>
+
+<div id="app">
+  <!-- NEW LAYOUT: USERNAME ABOVE BALANCE, BALANCE HIGHLIGHTED -->
+  <div class="profile-summary">
+    <div class="username-glow" id="displayNameSpan">---</div>
+    <div class="user-info-row">
+      <span class="username-locked">🔒 Permanent ID</span>
+    </div>
+    <div class="balance-card">
+      <span class="balance-label">WALLET BALANCE</span>
+      <div>
+        <span class="rupee-symbol">₹</span><span id="bal" class="balance-amount">0</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="flex-row">
+    <div class="menu-card" onclick="openMenu('drip')"><h3>💧 DRIP CLIENT</h3><small>Exclusive Access & Keys</small></div>
+  </div>
+  
+  <div id="menuSection" class="box" style="display:none;">
+    <div id="menuContent"></div>
+  </div>
+  
+  <div id="mainContent">
+    <div class="box" style="background: linear-gradient(145deg, #0f172a, #0b1120);">
+      <h3 style="text-align:center; color:#22c55e; font-size: 14px;">💸 UPI QR RECHARGE</h3>
+      <div class="upi-id">📱 UPI: <strong style="color:#00f7ff;">8750673645@fam</strong></div>
+      <div class="qr-container" id="qrContainer">
+        <img id="dynamicQR" class="qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi%3A%2F%2Fpay%3Fpa%3D8750673645%40fam%26pn%3DNOVA%26cu%3DINR">
+        <div id="qrAmountDisplay" class="current-qr-label">QR Amount: ANY</div>
+      </div>
+      <input type="number" id="qrAmountInput" placeholder="Enter amount for custom QR">
+      <button class="generate-btn" onclick="generateDynamicQR()">✨ Generate QR</button>
+      <button class="save-qr-btn" onclick="saveQRAsImage()">📸 Save QR Image</button>
+      <button class="btn" id="openPaymentDetailsBtn" style="background:#ff6600; margin-top: 10px; border: none; width:100%; padding: 8px;">📝 Submit Payment Details</button>
+      <div class="redirect-note">⚠️ After payment, click above to submit UTR & amount</div>
+    </div>
+    
+    <div class="box"><h3 style="font-size: 13px;">📜 Deposit History</h3><div id="depositHistory" class="history-scroll">Loading...</div></div>
+    
+    <div class="box chat-section">
+      <div style="display:flex; align-items:center; gap:5px; margin-bottom:8px;"><span style="font-size:18px;">💬</span><h3 style="font-size: 13px;">Support</h3><span id="globalUnreadBadge"></span></div>
+      <div id="globalChatMessages" class="chat-messages-area"><div style="text-align:center;color:gray; font-size:10px;">✨ Connect with support</div></div>
+      <div id="globalTypingIndicator" class="typing-indicator"></div>
+      <div class="chat-input-row"><input type="text" id="globalChatInput" placeholder="Type message..."><button class="send-btn" onclick="sendGlobalMessage()">SEND</button></div>
+    </div>
+    <div class="security-note">🔐 Username permanent | Auto-login 24 hours</div>
+  </div>
+</div>
+
+<div id="paymentSidePanel" class="side-panel-overlay">
+  <div class="side-panel">
+    <div class="close-panel" onclick="closePaymentPanel()">✕</div>
+    <h3 style="font-size:18px; margin-bottom:12px; text-align:center;">💳 Payment Details</h3>
+    <input type="text" id="panelUtr" placeholder="UTR Number / Transaction ID">
+    <input type="number" id="panelAmount" placeholder="Amount Paid (₹)">
+    <textarea id="panelRemarks" rows="2" placeholder="Optional remarks"></textarea>
+    <button class="btn" onclick="submitPaymentFromPanel()" style="background:#ff007a; margin-top:14px; width:100%;">Submit Request</button>
+    <div id="panelErrorMsg" class="error-msg" style="text-align:center;"></div>
+  </div>
+</div>
+
+<script>
+  // ========== AUTHENTICATION WITH 24H AUTO-LOGIN ==========
+  let CURRENT_USERNAME = null;
+  
+  function saveAutoLogin(username) {
+    const expiry = Date.now() + (24 * 60 * 60 * 1000);
+    localStorage.setItem("nova_autologin", JSON.stringify({ username: username, expiry: expiry }));
+  }
+  function clearAutoLogin() { localStorage.removeItem("nova_autologin"); }
+  async function hashPassword(pw) { return btoa(pw + "nova_salt_2025"); }
+  
+  async function handleSignup() {
+    let email = document.getElementById("signupEmail").value.trim().toLowerCase();
+    let username = document.getElementById("signupUsername").value.trim();
+    let password = document.getElementById("signupPassword").value;
+    let errDiv = document.getElementById("signupErrorMsg");
+    errDiv.innerText = "";
+    if (!email || !username || !password) { errDiv.innerText = "All fields required"; return; }
+    if (username.length < 3) { errDiv.innerText = "Username min 3 chars"; return; }
+    if (password.length < 4) { errDiv.innerText = "Password min 4 chars"; return; }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) { errDiv.innerText = "Only letters, numbers, underscore"; return; }
+    username = username.toLowerCase();
+    
+    let snapUser = await db.ref("usernames").orderByChild("username").equalTo(username).once("value");
+    if (snapUser.exists()) { errDiv.innerText = "Username taken!"; return; }
+    let snapEmail = await db.ref("auth_users").orderByChild("email").equalTo(email).once("value");
+    if (snapEmail.exists()) { errDiv.innerText = "Email already registered"; return; }
+    
+    const hashedPass = await hashPassword(password);
+    await db.ref("users_by_username/" + username).set({
+      username, email, passwordHash: hashedPass, balance: 0,
+      displayName: username, createdAt: Date.now(), purchasedStars: 0, pushedStars: 0
+    });
+    await db.ref("usernames/" + username).set({ username, createdAt: Date.now() });
+    await db.ref("displayNames/" + username).set({ name: username, nameLower: username, createdAt: Date.now() });
+    sendToTelegram(`🆕 NEW SIGNUP\n ${username}\n📧 ${email}`);
+    alert("✅ Account created! Please login.");
+    document.getElementById("signupUsername").value = "";
+    document.getElementById("signupEmail").value = "";
+    document.getElementById("signupPassword").value = "";
+    document.getElementById("loginTabBtn").click();
+    showFloatingMessage("Account created! Please login now.", "#22c55e");
+  }
+  
+  async function handleLogin() {
+    let username = document.getElementById("loginUsername").value.trim().toLowerCase();
+    let password = document.getElementById("loginPassword").value;
+    let errDiv = document.getElementById("authErrorMsg");
+    errDiv.innerText = "";
+    if (!username || !password) { errDiv.innerText = "Enter credentials"; return; }
+    const hashedInput = await hashPassword(password);
+    const userSnap = await db.ref("users_by_username/" + username).once("value");
+    if (!userSnap.exists()) { errDiv.innerText = "Invalid credentials"; return; }
+    const userData = userSnap.val();
+    if (userData.passwordHash !== hashedInput) { errDiv.innerText = "Invalid credentials"; return; }
+    CURRENT_USERNAME = username;
+    saveAutoLogin(username);
+    sessionStorage.setItem("nova_session_user", username);
+    sendToTelegram(`🔐 LOGIN\n ${username}`);
+    showApp();
+    startApp();
+    showFloatingMessage(`Welcome ${username.toUpperCase()}! Auto-login active for 24h.`, "#22c55e");
+  }
+  
+  async function checkAutoLogin() {
+    const saved = localStorage.getItem("nova_autologin");
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        if (data.expiry && data.expiry > Date.now()) {
+          const snap = await db.ref("users_by_username/" + data.username).once("value");
+          if (snap.exists()) {
+            CURRENT_USERNAME = data.username;
+            sessionStorage.setItem("nova_session_user", data.username);
+            showApp();
+            startApp();
+            return true;
+          } else { clearAutoLogin(); }
+        } else { clearAutoLogin(); }
+      } catch(e) { clearAutoLogin(); }
+    }
+    return false;
+  }
+  
+  async function checkSession() {
+    if (await checkAutoLogin()) return true;
+    const savedUser = sessionStorage.getItem("nova_session_user");
+    if (savedUser) {
+      const snap = await db.ref("users_by_username/" + savedUser).once("value");
+      if (snap.exists()) {
+        CURRENT_USERNAME = savedUser;
+        showApp();
+        startApp();
+        return true;
+      } else { sessionStorage.removeItem("nova_session_user"); }
+    }
+    return false;
+  }
+  
+  function showApp() {
+    document.getElementById("authBox").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    document.getElementById("displayNameSpan").innerText = CURRENT_USERNAME.toUpperCase();
+  }
+  
+  // ========== DRIP LOGIC ==========
+  let globalChatRoomId = null, balanceListener = null, depositListener = null, currentDripListenerRef = null;
+  
+  function renderHorizontalDripHistory(items) {
+    if (!items || items.length === 0) return "<div style='padding:12px;text-align:center;color:#666; font-size:11px;'>No drip orders</div>";
+    let cards = '';
+    for (let it of items) {
+      let statusClass = it.status === 'approved' ? 'status-approved-bg' : (it.status === 'rejected' ? 'status-rejected-bg' : 'status-pending-bg');
+      let statusText = it.status === 'approved' ? 'Approved' : (it.status === 'rejected' ? 'Rejected' : 'Pending');
+      let timeStr = it.timestamp ? new Date(it.timestamp).toLocaleString() : new Date().toLocaleString();
+      let keyHtml = (it.status === 'approved' && it.key) ? `<br>🔑 Key: ${escapeHtml(it.key)}` : (it.status === 'pending' ? '<br>⏳ Awaiting key' : '');
+      cards += `<div class="history-card"><div style="font-size:9px; color:cyan;">DRIP ORDER</div><div style="font-size:14px; font-weight:bold;">₹${it.price}</div><div><span class="${statusClass}">${statusText}</span></div><div style="font-size:9px;">📦 ${escapeHtml(it.plan)}${keyHtml}</div><div style="font-size:7px; color:#aaa;">🕒 ${timeStr}</div></div>`;
+    }
+    return `<div class="history-horizontal">${cards}</div>`;
+  }
+  
+  function loadDripHistory() {
+    if (currentDripListenerRef) currentDripListenerRef.off();
+    const query = db.ref("drip_orders").orderByChild("userId").equalTo(CURRENT_USERNAME);
+    query.on("value", (snap) => {
+      let data = snap.val(); let items = [];
+      if (data) for (let id in data) items.push({ id, ...data[id] });
+      items.sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+      const container = document.getElementById("dripHistory");
+      if (container) container.innerHTML = renderHorizontalDripHistory(items);
+    });
+    currentDripListenerRef = query;
+  }
+  
+  function redirectToRecharge(requiredAmount, planName) {
+    if (document.getElementById("menuSection").style.display === "block") closeMenu();
+    const qrSection = document.querySelector("#mainContent .box:first-child");
+    if (qrSection) {
+      qrSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      const amountInput = document.getElementById("qrAmountInput");
+      if (amountInput) { amountInput.value = requiredAmount; generateDynamicQR(); }
+      showFloatingMessage(`Low balance! Need ₹${requiredAmount} for ${planName}. Recharge using QR.`, "#ffaa44");
+      sendToTelegram(`⚠️ LOW BALANCE\n👤 ${CURRENT_USERNAME}\nPlan: ${planName} needs ₹${requiredAmount}`);
+    } else { alert(`Insufficient balance! Need ₹${requiredAmount}.`); }
+  }
+  
+  function buyDrip(price, plan) {
+    let bal = parseInt(document.getElementById("bal").innerText);
+    if(isNaN(bal) || bal < price) { redirectToRecharge(price, plan); return; }
+    db.ref("users_by_username/" + CURRENT_USERNAME + "/balance").transaction(b=>{ if(b===null||b<price) return; return b-price; }).then(res=>{
+      if(res.committed){
+        db.ref("drip_orders").push({ userId: CURRENT_USERNAME, displayName: CURRENT_USERNAME, plan: plan, price: price, status: "pending", timestamp: Date.now() }).then(() => {
+          sendToTelegram(`💧 DRIP ORDER\n👤 ${CURRENT_USERNAME}\nPlan: ${plan}\n₹${price}`);
+          alert(`✅ "${plan}" purchased! ₹${price} deducted. Awaiting key.`);
+          loadDripHistory();
+        });
+      } else alert("Transaction failed");
+    }).catch(e => console.error(e));
+  }
+  
+  function submitPaymentFromPanel() {
+    let utr = document.getElementById("panelUtr").value.trim();
+    let amount = parseInt(document.getElementById("panelAmount").value);
+    let remarks = document.getElementById("panelRemarks").value.trim();
+    if(!utr || !amount || amount <= 0) {
+      document.getElementById("panelErrorMsg").innerText = "UTR & valid amount required";
+      return;
+    }
+    db.ref("deposits").push({ 
+      userId: CURRENT_USERNAME, displayName: CURRENT_USERNAME, telegram: utr, 
+      amount: amount, remarks: remarks || "", status: "pending", timestamp: Date.now() 
+    });
+    sendToTelegram(`💰 DEPOSIT REQ\n👤 ${CURRENT_USERNAME}\n📱 UTR: ${utr}\n💵 ₹${amount}`);
+    alert("Payment request submitted! Admin will verify.");
+    closePaymentPanel();
+    document.getElementById("panelUtr").value = "";
+    document.getElementById("panelAmount").value = "";
+    document.getElementById("panelRemarks").value = "";
+    showFloatingMessage("Deposit request sent!", "#22c55e");
+  }
+  
+  function openPaymentPanel() { document.getElementById("paymentSidePanel").style.display = "flex"; document.getElementById("panelErrorMsg").innerText = ""; }
+  function closePaymentPanel() { document.getElementById("paymentSidePanel").style.display = "none"; }
+  
+  function saveQRAsImage() {
+    const qrImg = document.getElementById("dynamicQR");
+    if (!qrImg || !qrImg.src) { alert("No QR image to save. Generate a QR first."); return; }
+    const link = document.createElement('a');
+    link.download = `NOVA_QR_${Date.now()}.png`;
+    link.href = qrImg.src;
+    link.click();
+    showFloatingMessage("QR image saved!", "#3b82f6");
+  }
+  
+  function startApp() {
+    if (!CURRENT_USERNAME) return;
+    globalChatRoomId = `support_${CURRENT_USERNAME}`;
+    if (balanceListener) balanceListener.off();
+    balanceListener = db.ref("users_by_username/" + CURRENT_USERNAME + "/balance").on("value", snap => document.getElementById("bal").innerText = snap.val() ?? 0);
+    loadDepositHistory();
+    initChat();
+  }
+  
+  function initChat() {
+    if(!globalChatRoomId) return;
+    db.ref("global_chats/"+globalChatRoomId+"/messages").off(); 
+    db.ref("global_chats/"+globalChatRoomId+"/messages").on("value", snap=>{ renderChat(snap.val()); markSeen(); });
+    db.ref("global_typing/"+globalChatRoomId).on("value", snap=>{ let t=snap.val(); document.getElementById("globalTypingIndicator").innerText = (t&&t.typing&&Date.now()-(t.time||0)<3000)?"Admin typing...":""; });
+    updateUnread();
+  }
+  
+  function renderChat(msgs) {
+    let container = document.getElementById("globalChatMessages");
+    if(!msgs) { container.innerHTML="<div style='text-align:center;color:gray; font-size:10px;'>No messages</div>"; return; }
+    let arr = Object.entries(msgs).map(([k,v])=>({id:k,...v})).sort((a,b)=>(a.time||0)-(b.time||0));
+    let html="";
+    for(let m of arr){
+      let isMe = (m.sender === CURRENT_USERNAME);
+      let sender = isMe ? "You" : (m.senderDisplayName||"Admin");
+      let time = m.time ? new Date(m.time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : "";
+      html += `<div class="message-bubble ${isMe?'me':''}"><div style="font-size:9px; opacity:0.7;">${escapeHtml(sender)}</div><div>${escapeHtml(m.text)}</div><div style="font-size:6px; opacity:0.5;">${time}</div></div>`;
+    }
+    container.innerHTML=html; container.scrollTop=container.scrollHeight;
+  }
+  
+  function sendGlobalMessage() {
+    let txt = document.getElementById("globalChatInput").value.trim();
+    if(!txt||!globalChatRoomId) return alert("Enter message");
+    db.ref("global_chats/"+globalChatRoomId+"/messages").push({ sender: CURRENT_USERNAME, senderDisplayName: CURRENT_USERNAME, text: txt, time: Date.now(), seen: false });
+    document.getElementById("globalChatInput").value="";
+    updateUnread();
+    sendToTelegram(`💬 MSG: ${txt.substring(0,100)}`);
+  }
+  
+  function markSeen() { if(!globalChatRoomId) return; db.ref("global_chats/"+globalChatRoomId+"/messages").once("value", snap=>{ let msgs=snap.val(); if(msgs) for(let k in msgs) if(msgs[k].sender!==CURRENT_USERNAME && !msgs[k].seen) db.ref("global_chats/"+globalChatRoomId+"/messages/"+k).update({seen:true}); }); document.getElementById("globalUnreadBadge").innerHTML=""; }
+  
+  function updateUnread() { if(!globalChatRoomId) return; db.ref("global_chats/"+globalChatRoomId+"/messages").once("value", snap=>{ let msgs=snap.val(), c=0; if(msgs) for(let k in msgs) if(msgs[k].sender!==CURRENT_USERNAME && !msgs[k].seen) c++; document.getElementById("globalUnreadBadge").innerHTML = c?`<span style="background:#ff007a; border-radius:20px; padding:1px 6px; font-size:8px;">${c}</span>`:""; }); }
+  
+  let typingTimer=null;
+  function sendTyping() { if(!globalChatRoomId) return; db.ref("global_typing/"+globalChatRoomId).set({typing:true,time:Date.now()}); if(typingTimer) clearTimeout(typingTimer); typingTimer=setTimeout(()=>db.ref("global_typing/"+globalChatRoomId).remove(),2000); }
+  
+  function loadDepositHistory() {
+    if(depositListener) depositListener();
+    depositListener = db.ref("deposits").orderByChild("userId").equalTo(CURRENT_USERNAME).on("value", snap=>{
+      let data=snap.val(); let html="";
+      if(data) for(let id in data){
+        let d=data[id];
+        let statusText = d.status==="approved"?"✅ Approved":(d.status==="rejected"?"❌ Rejected":"⏳ Pending");
+        html += `<div class="item" style="padding:5px 0;"><div style="font-size:11px;">₹${d.amount} - ${statusText}<br><span style="font-size:8px;">📱 ${escapeHtml(d.telegram)}</span></div></div>`;
+      }
+      document.getElementById("depositHistory").innerHTML = html || "<div style='padding:6px;text-align:center; font-size:10px;'>No deposits</div>";
+    });
+  }
+  
+  function generateDynamicQR() {
+    let amt = document.getElementById("qrAmountInput").value.trim();
+    if(!amt||isNaN(amt)||parseFloat(amt)<=0) return alert("Enter valid amount");
+    let amountValue = parseFloat(amt).toFixed(2);
+    let upi = `upi://pay?pa=8750673645@fam&pn=NOVA&am=${amountValue}&cu=INR`;
+    document.getElementById("dynamicQR").src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upi)}`;
+    document.getElementById("qrAmountDisplay").innerHTML = `QR Amount: ₹ ${amountValue}`;
+    showFloatingMessage(`QR for ₹${amountValue} generated.`, "#22c55e");
+  }
+  
+  function openMenu(type){
+    document.getElementById("mainContent").style.display = "none";
+    document.getElementById("menuSection").style.display = "block";
+    let div = document.getElementById("menuContent");
+    if(type==="drip"){
+      div.innerHTML = `
+        <div class="back-nav"><div class="back-icon" onclick="closeMenu()">←</div><div style="font-size:16px; font-weight:bold;">💧 DRIP CLIENT</div></div>
+        <div class="drip-client-title">✦ Purchase Plans ✦</div>
+        <div>
+          <div class="item"><span>1 Day - ₹75</span><button class="buy" onclick="buyDrip(75,'1 Day')">BUY</button></div>
+          <div class="item"><span>7 Days - ₹290</span><button class="buy" onclick="buyDrip(290,'7 Days')">BUY</button></div>
+          <div class="item"><span>15 Days - ₹500</span><button class="buy" onclick="buyDrip(500,'15 Days')">BUY</button></div>
+          <div class="item"><span>30 Days - ₹900</span><button class="buy" onclick="buyDrip(900,'30 Days')">BUY</button></div>
+          <div class="item"><span>60 Days - ₹1600</span><button class="buy" onclick="buyDrip(1600,'60 Days')">BUY</button></div>
+        </div>
+        <h4 style="margin-top:10px; font-size:12px;">📋 HISTORY & KEYS</h4>
+        <div id="dripHistory"></div>`;
+      loadDripHistory();
+    }
+  }
+  
+  function closeMenu(){ document.getElementById("menuSection").style.display = "none"; document.getElementById("mainContent").style.display = "block"; }
+  
+  function showFloatingMessage(msg, bg="#1e2a3e") {
+    let el = document.createElement("div");
+    el.className = "flash-message";
+    el.style.background = bg;
+    el.innerText = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  }
+  
+  function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>]/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+  
+  document.addEventListener("DOMContentLoaded",()=>{ 
+    setTimeout(()=>{ let inp=document.getElementById("globalChatInput"); if(inp) inp.addEventListener("input",sendTyping); },500); 
+    checkSession();
+    
+    document.getElementById("loginTabBtn").addEventListener("click", ()=>{
+      document.getElementById("loginPanel").style.display = "block";
+      document.getElementById("signupPanel").style.display = "none";
+      document.getElementById("loginTabBtn").classList.add("active");
+      document.getElementById("signupTabBtn").classList.remove("active");
+    });
+    document.getElementById("signupTabBtn").addEventListener("click", ()=>{
+      document.getElementById("loginPanel").style.display = "none";
+      document.getElementById("signupPanel").style.display = "block";
+      document.getElementById("signupTabBtn").classList.add("active");
+      document.getElementById("loginTabBtn").classList.remove("active");
+    });
+    document.getElementById("openPaymentDetailsBtn").addEventListener("click", openPaymentPanel);
+  });
+  
+  window.handleLogin = handleLogin; window.handleSignup = handleSignup; window.buyDrip = buyDrip;
+  window.sendGlobalMessage = sendGlobalMessage; window.generateDynamicQR = generateDynamicQR;
+  window.openMenu = openMenu; window.closeMenu = closeMenu;
+  window.submitPaymentFromPanel = submitPaymentFromPanel; window.closePaymentPanel = closePaymentPanel;
+  window.saveQRAsImage = saveQRAsImage;
+</script>
+</body>
+</html>
