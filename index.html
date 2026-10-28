@@ -89,7 +89,6 @@
   .loader{ display:inline-block; width:16px; height:16px; border:3px solid rgba(0,0,0,.2); border-top-color:#000; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-right:8px;}
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Link Box Design */
   .link-box {
     background: rgba(34,211,238,.1); border: 1px solid rgba(34,211,238,.3);
     padding: 15px; border-radius: 12px; margin-bottom: 20px;
@@ -193,57 +192,62 @@ function randomKey() {
     return `FIXA-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
 }
 
-// 1. Generate Link & Show on Screen
-window.generateShortLink = async function() {
+// 🔥 JSONP METHOD (Bypasses all CORS & Proxy issues) 🔥
+window.generateShortLink = function() {
     hideAlert();
     const btn = document.getElementById("getKeyBtn");
     btn.disabled = true;
     btn.innerHTML = '<span class="loader"></span> GENERATING...';
     
-    try {
-        const randomAlias = "fixa" + Math.floor(Math.random() * 1000000);
-        const targetUrl = `https://go.urlking.in/api?api=${URL_API_KEY}&url=${encodeURIComponent(DESTINATION_URL)}&alias=${randomAlias}`;
-        
-        // Naya Fast Proxy (CORS Bypass)
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
-        
-        const response = await fetch(proxyUrl);
-        const textResponse = await response.text();
-        
-        if(textResponse.includes('"status":"success"')) {
-            const match = textResponse.match(/"shortenedUrl"\s*:\s*"([^"]+)"/);
-            if (match && match[1]) {
-                const shortUrl = match[1];
-                
-                // Show link in UI
-                document.getElementById("formSection").style.display = "none";
-                document.getElementById("linkSection").style.display = "block";
-                document.getElementById("manualLink").href = shortUrl;
-                document.getElementById("manualLink").textContent = shortUrl;
-                
-                // Save state
-                localStorage.setItem("fixa_verifying", "true");
-                localStorage.setItem("fixa_link_opened", "false");
-                
-                // Auto open in new tab
-                window.open(shortUrl, "_blank");
-                
-                showAlert("✅ Link generated! Please complete it and come back.", "success");
-            } else {
-                throw new Error("Short URL not found.");
-            }
+    const randomAlias = "fixa" + Math.floor(Math.random() * 1000000);
+    
+    // URLKing API supports JSONP
+    const apiUrl = `https://go.urlking.in/api?api=${URL_API_KEY}&url=${encodeURIComponent(DESTINATION_URL)}&alias=${randomAlias}&format=jsonp&callback=urlKingCallback`;
+
+    // Create script tag for JSONP
+    const script = document.createElement("script");
+    script.src = apiUrl;
+    document.body.appendChild(script);
+
+    // Callback function jo API se data receive karega
+    window.urlKingCallback = function(data) {
+        // Remove script tag after getting data
+        document.body.removeChild(script);
+
+        if(data.status === "success") {
+            const shortUrl = data.shortenedUrl;
+            
+            // Show link in UI
+            document.getElementById("formSection").style.display = "none";
+            document.getElementById("linkSection").style.display = "block";
+            document.getElementById("manualLink").href = shortUrl;
+            document.getElementById("manualLink").textContent = shortUrl;
+            
+            // Save state
+            localStorage.setItem("fixa_verifying", "true");
+            
+            // Auto open in new tab
+            window.open(shortUrl, "_blank");
+            
+            showAlert("✅ Link generated! Please complete it and come back.", "success");
         } else {
-            throw new Error("API blocked or failed.");
+            showAlert("❌ API Error: " + data.message, "error");
+            btn.innerHTML = 'GET FREE KEY';
+            btn.disabled = false;
         }
-    } catch (err) {
-        console.error("Error:", err);
-        showAlert("❌ Server busy. Please click again.", "error");
-        btn.innerHTML = 'GET FREE KEY';
-        btn.disabled = false;
-    }
+    };
+
+    // Timeout if API fails to respond
+    setTimeout(() => {
+        if(btn.disabled) {
+            showAlert("❌ Server busy. Please try again.", "error");
+            btn.innerHTML = 'GET FREE KEY';
+            btn.disabled = false;
+            if(script.parentNode) document.body.removeChild(script);
+        }
+    }, 5000);
 }
 
-// 2. Manual Check Button (Agar user auto-redirect se wapas nahi aata)
 window.checkReturn = function() {
     document.getElementById("linkSection").style.display = "none";
     showAlert("⏳ Verifying... Please wait.", "warn");
@@ -255,7 +259,6 @@ window.checkReturn = function() {
     }, 2000);
 }
 
-// 3. Auto check on page load (Agar user naye tab se wapas aata hai)
 window.addEventListener("load", async () => {
     const isVerifying = localStorage.getItem("fixa_verifying");
     
@@ -271,7 +274,6 @@ window.addEventListener("load", async () => {
     }
 });
 
-// 4. Final Key Generate Function
 async function generateFinalKey() {
     try {
         const newKey = randomKey();
@@ -308,7 +310,6 @@ async function generateFinalKey() {
     }
 }
 
-// 5. Copy Function
 window.copyKey = function() {
     if(!currentKey) return;
     const textarea = document.createElement("textarea");
