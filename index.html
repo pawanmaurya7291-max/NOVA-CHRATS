@@ -88,6 +88,16 @@
   .copy-btn:hover{ background:var(--border); }
   .loader{ display:inline-block; width:16px; height:16px; border:3px solid rgba(0,0,0,.2); border-top-color:#000; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-right:8px;}
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Link Box Design */
+  .link-box {
+    background: rgba(34,211,238,.1); border: 1px solid rgba(34,211,238,.3);
+    padding: 15px; border-radius: 12px; margin-bottom: 20px;
+  }
+  .link-box a {
+    color: var(--accent-2); font-family:'JetBrains Mono',monospace; font-size: 13px; 
+    word-break: break-all; text-decoration: underline; font-weight: 700;
+  }
 </style>
 </head>
 <body>
@@ -100,13 +110,28 @@
   <div class="card">
     <div id="alert" class="alert"></div>
     
+    <!-- Step 1: Button -->
     <div id="formSection">
       <p style="font-size:12.5px; color:var(--muted); margin-bottom:20px; line-height:1.6;">
-        Click the button below. A verification link will open automatically in a new tab. Complete it to get your key.
+        Click below to get your verification link. Once you open it and complete the steps, come back to this page to claim your key.
       </p>
       <button class="btn" id="getKeyBtn" onclick="generateShortLink()">GET FREE KEY</button>
     </div>
 
+    <!-- Step 2: Show Link -->
+    <div id="linkSection" style="display:none;">
+      <p style="font-size:12.5px; color:var(--muted); margin-bottom:15px; line-height:1.6;">
+        Your link is ready! It should have opened automatically. If not, click the link below:
+      </p>
+      
+      <div class="link-box">
+        <a href="#" id="manualLink" target="_blank">Click Here to Open Link</a>
+      </div>
+      
+      <button class="btn" onclick="checkReturn()">I HAVE COMPLETED THE LINK</button>
+    </div>
+
+    <!-- Step 3: Result -->
     <div id="resultBox">
       <div class="key-box">
         <div class="lbl">YOUR WORKING KEY</div>
@@ -149,9 +174,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const USERS_NODE = "FIXA_MODS";
 
-// 🔥 Aapki API Key 🔥
 const URL_API_KEY = "247361796ae1cf2bb41fba597e4b19b46651fd63";
-// Destination URL (Jahan user redirect hoga shortener ke baad)
 const DESTINATION_URL = window.location.origin + window.location.pathname; 
 
 let currentKey = "";
@@ -170,18 +193,19 @@ function randomKey() {
     return `FIXA-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
 }
 
-// 1. Short Link Generate & Auto-Open Function
+// 1. Generate Link & Show on Screen
 window.generateShortLink = async function() {
     hideAlert();
     const btn = document.getElementById("getKeyBtn");
     btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span> GENERATING LINK...';
+    btn.innerHTML = '<span class="loader"></span> GENERATING...';
     
     try {
         const randomAlias = "fixa" + Math.floor(Math.random() * 1000000);
         const targetUrl = `https://go.urlking.in/api?api=${URL_API_KEY}&url=${encodeURIComponent(DESTINATION_URL)}&alias=${randomAlias}`;
         
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+        // Naya Fast Proxy (CORS Bypass)
+        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
         
         const response = await fetch(proxyUrl);
         const textResponse = await response.text();
@@ -191,31 +215,47 @@ window.generateShortLink = async function() {
             if (match && match[1]) {
                 const shortUrl = match[1];
                 
-                // Save flag so when user returns, they get the key
-                localStorage.setItem("fixa_verifying", "true");
+                // Show link in UI
+                document.getElementById("formSection").style.display = "none";
+                document.getElementById("linkSection").style.display = "block";
+                document.getElementById("manualLink").href = shortUrl;
+                document.getElementById("manualLink").textContent = shortUrl;
                 
-                // 🔥 AUTOMATIC OPEN IN NEW TAB 🔥
+                // Save state
+                localStorage.setItem("fixa_verifying", "true");
+                localStorage.setItem("fixa_link_opened", "false");
+                
+                // Auto open in new tab
                 window.open(shortUrl, "_blank");
                 
-                // Change UI to show waiting message
-                document.getElementById("formSection").style.display = "none";
-                showAlert("⏳ Link opened in new tab. Please complete the shortener and return here.", "warn");
-                
+                showAlert("✅ Link generated! Please complete it and come back.", "success");
             } else {
                 throw new Error("Short URL not found.");
             }
         } else {
-            throw new Error("API failed to generate link.");
+            throw new Error("API blocked or failed.");
         }
     } catch (err) {
         console.error("Error:", err);
-        showAlert("❌ Error: " + err.message, "error");
+        showAlert("❌ Server busy. Please click again.", "error");
         btn.innerHTML = 'GET FREE KEY';
         btn.disabled = false;
     }
 }
 
-// 2. When page loads, check if user returned from shortener
+// 2. Manual Check Button (Agar user auto-redirect se wapas nahi aata)
+window.checkReturn = function() {
+    document.getElementById("linkSection").style.display = "none";
+    showAlert("⏳ Verifying... Please wait.", "warn");
+    
+    setTimeout(async () => {
+        showAlert("✅ Verification successful! Generating key...", "success");
+        await generateFinalKey();
+        localStorage.removeItem("fixa_verifying");
+    }, 2000);
+}
+
+// 3. Auto check on page load (Agar user naye tab se wapas aata hai)
 window.addEventListener("load", async () => {
     const isVerifying = localStorage.getItem("fixa_verifying");
     
@@ -223,7 +263,6 @@ window.addEventListener("load", async () => {
         document.getElementById("formSection").style.display = "none";
         showAlert("⏳ Verifying your return... Please wait.", "warn");
         
-        // 2 second fake verification delay
         setTimeout(async () => {
             showAlert("✅ Verification successful! Generating key...", "success");
             await generateFinalKey();
@@ -232,7 +271,7 @@ window.addEventListener("load", async () => {
     }
 });
 
-// 3. Final Key Generate Function
+// 4. Final Key Generate Function
 async function generateFinalKey() {
     try {
         const newKey = randomKey();
@@ -269,7 +308,7 @@ async function generateFinalKey() {
     }
 }
 
-// 4. Copy Function
+// 5. Copy Function
 window.copyKey = function() {
     if(!currentKey) return;
     const textarea = document.createElement("textarea");
