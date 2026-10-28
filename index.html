@@ -102,7 +102,7 @@
     
     <div id="formSection">
       <p style="font-size:12.5px; color:var(--muted); margin-bottom:20px; line-height:1.6;">
-        Click the button below to generate your working license key. You will be redirected to a shortener link first.
+        Click the button below. A verification link will open automatically in a new tab. Complete it to get your key.
       </p>
       <button class="btn" id="getKeyBtn" onclick="generateShortLink()">GET FREE KEY</button>
     </div>
@@ -151,8 +151,8 @@ const USERS_NODE = "FIXA_MODS";
 
 // 🔥 Aapki API Key 🔥
 const URL_API_KEY = "247361796ae1cf2bb41fba597e4b19b46651fd63";
-// Destination URL (Jahan user redirect hoga)
-const DESTINATION_URL = "https://t.me/YourTelegramChannel"; 
+// Destination URL (Jahan user redirect hoga shortener ke baad)
+const DESTINATION_URL = window.location.origin + window.location.pathname; 
 
 let currentKey = "";
 
@@ -170,38 +170,42 @@ function randomKey() {
     return `FIXA-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
 }
 
-// 1. Short Link Generate Function
+// 1. Short Link Generate & Auto-Open Function
 window.generateShortLink = async function() {
     hideAlert();
     const btn = document.getElementById("getKeyBtn");
     btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span> CREATING LINK...';
+    btn.innerHTML = '<span class="loader"></span> GENERATING LINK...';
     
     try {
         const randomAlias = "fixa" + Math.floor(Math.random() * 1000000);
         const targetUrl = `https://go.urlking.in/api?api=${URL_API_KEY}&url=${encodeURIComponent(DESTINATION_URL)}&alias=${randomAlias}`;
         
-        // Using powerful proxy to fetch API
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
         
         const response = await fetch(proxyUrl);
-        const textResponse = await response.text(); // Get raw text
+        const textResponse = await response.text();
         
-        // Check if response has success in it
         if(textResponse.includes('"status":"success"')) {
-            
-            // Extract the short URL from JSON string using regex
             const match = textResponse.match(/"shortenedUrl"\s*:\s*"([^"]+)"/);
-            
             if (match && match[1]) {
                 const shortUrl = match[1];
+                
+                // Save flag so when user returns, they get the key
                 localStorage.setItem("fixa_verifying", "true");
-                window.location.href = shortUrl; // Redirect to shortener
+                
+                // 🔥 AUTOMATIC OPEN IN NEW TAB 🔥
+                window.open(shortUrl, "_blank");
+                
+                // Change UI to show waiting message
+                document.getElementById("formSection").style.display = "none";
+                showAlert("⏳ Link opened in new tab. Please complete the shortener and return here.", "warn");
+                
             } else {
-                throw new Error("URL not found in response");
+                throw new Error("Short URL not found.");
             }
         } else {
-            throw new Error("API failed to generate link");
+            throw new Error("API failed to generate link.");
         }
     } catch (err) {
         console.error("Error:", err);
@@ -211,7 +215,7 @@ window.generateShortLink = async function() {
     }
 }
 
-// 2. Page Load par check karo ki user wapas aaya hai ya nahi
+// 2. When page loads, check if user returned from shortener
 window.addEventListener("load", async () => {
     const isVerifying = localStorage.getItem("fixa_verifying");
     
@@ -219,11 +223,12 @@ window.addEventListener("load", async () => {
         document.getElementById("formSection").style.display = "none";
         showAlert("⏳ Verifying your return... Please wait.", "warn");
         
+        // 2 second fake verification delay
         setTimeout(async () => {
             showAlert("✅ Verification successful! Generating key...", "success");
             await generateFinalKey();
             localStorage.removeItem("fixa_verifying");
-        }, 2000); // 2 seconds delay so it looks like its checking
+        }, 2000);
     }
 });
 
