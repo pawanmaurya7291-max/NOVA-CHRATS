@@ -151,7 +151,7 @@ const USERS_NODE = "FIXA_MODS";
 
 // 🔥 Aapki API Key 🔥
 const URL_API_KEY = "247361796ae1cf2bb41fba597e4b19b46651fd63";
-// Destination URL (Jahan user redirect hoga - Shortener complete hone ke baad)
+// Destination URL (Jahan user redirect hoga)
 const DESTINATION_URL = "https://t.me/YourTelegramChannel"; 
 
 let currentKey = "";
@@ -175,35 +175,39 @@ window.generateShortLink = async function() {
     hideAlert();
     const btn = document.getElementById("getKeyBtn");
     btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span> GENERATING LINK...';
+    btn.innerHTML = '<span class="loader"></span> CREATING LINK...';
     
     try {
         const randomAlias = "fixa" + Math.floor(Math.random() * 1000000);
         const targetUrl = `https://go.urlking.in/api?api=${URL_API_KEY}&url=${encodeURIComponent(DESTINATION_URL)}&alias=${randomAlias}`;
         
-        // 🔥 Using a powerful CORS proxy 🔥
-        const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+        // Using powerful proxy to fetch API
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
         
         const response = await fetch(proxyUrl);
-        const data = await response.json();
+        const textResponse = await response.text(); // Get raw text
         
-        if(data.status === "success" && data.shortenedUrl) {
-            localStorage.setItem("fixa_verifying", "true");
-            window.location.href = data.shortenedUrl;
+        // Check if response has success in it
+        if(textResponse.includes('"status":"success"')) {
+            
+            // Extract the short URL from JSON string using regex
+            const match = textResponse.match(/"shortenedUrl"\s*:\s*"([^"]+)"/);
+            
+            if (match && match[1]) {
+                const shortUrl = match[1];
+                localStorage.setItem("fixa_verifying", "true");
+                window.location.href = shortUrl; // Redirect to shortener
+            } else {
+                throw new Error("URL not found in response");
+            }
         } else {
-            // Fallback: If API doesn't return success, we still redirect to shortener so user doesn't get stuck
-            showAlert("⚠️ API issue, redirecting to manual shortener...", "warn");
-            setTimeout(() => {
-                window.location.href = "https://go.urlking.in/api?api=" + URL_API_KEY + "&url=" + encodeURIComponent(DESTINATION_URL);
-            }, 2000);
+            throw new Error("API failed to generate link");
         }
     } catch (err) {
-        console.error("Fetch Error:", err);
-        // Direct redirect fallback (If fetch is blocked by local file)
-        showAlert("⚠️ Directing to shortener...", "warn");
-        setTimeout(() => {
-            window.location.href = "https://go.urlking.in/api?api=" + URL_API_KEY + "&url=" + encodeURIComponent(DESTINATION_URL);
-        }, 1500);
+        console.error("Error:", err);
+        showAlert("❌ Error: " + err.message, "error");
+        btn.innerHTML = 'GET FREE KEY';
+        btn.disabled = false;
     }
 }
 
@@ -219,7 +223,7 @@ window.addEventListener("load", async () => {
             showAlert("✅ Verification successful! Generating key...", "success");
             await generateFinalKey();
             localStorage.removeItem("fixa_verifying");
-        }, 2000);
+        }, 2000); // 2 seconds delay so it looks like its checking
     }
 });
 
