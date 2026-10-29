@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#05070a" />
+<title>NOVA CHETS • Get Free Key</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#05070a; --panel:rgba(255,255,255,.03); --border:rgba(255,255,255,.08);
+    --text:#eef2f7; --muted:#69708a; --accent:#00d68f; --accent-2:#22d3ee;
+    --green:#22c55e; --red:#ef4444;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
+  body{
+    background:var(--bg); color:var(--text); min-height:100vh; display:flex;
+    align-items:center; justify-content:center; padding:20px; overflow-x:hidden;
+    background-image: radial-gradient(800px 500px at 10% 0%, rgba(0,214,143,.15), transparent 60%),
+                      radial-gradient(600px 400px at 90% 100%, rgba(34,211,238,.15), transparent 60%);
+  }
+  .container{ width:100%; max-width:420px; z-index:10; }
+  .logo{
+    width:80px; height:80px; border-radius:24px; margin:0 auto 20px;
+    display:grid; place-items:center; font-size:36px;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    box-shadow:0 8px 24px rgba(0,214,143,.3);
+  }
+  .title{
+    text-align:center; font-size:26px; font-weight:900; margin-bottom:8px;
+    background:linear-gradient(135deg, #fff 20%, var(--accent-2) 60%, var(--accent) 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .subtitle{
+    text-align:center; font-size:11px; color:var(--muted); letter-spacing:2px;
+    text-transform:uppercase; font-family:'JetBrains Mono',monospace; margin-bottom:30px;
+  }
+  .card{
+    padding:24px; border-radius:22px; background:var(--panel); border:1px solid var(--border);
+    backdrop-filter:blur(12px); box-shadow:0 12px 40px rgba(0,0,0,.5); text-align:center;
+  }
+  .btn{
+    width:100%; padding:16px; border-radius:12px; border:none; cursor:pointer;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:#02150f; font-weight:900; font-size:14px; letter-spacing:1px;
+    text-transform:uppercase; font-family:'JetBrains Mono',monospace;
+    transition:.2s; box-shadow:0 4px 16px rgba(0,214,143,.3);
+  }
+  .btn:hover{ transform:translateY(-1px); opacity:.95; }
+  .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+  .alert{
+    padding:12px 14px; border-radius:12px; font-size:12.5px; font-weight:600;
+    margin-bottom:16px; display:none; line-height:1.5; word-break:break-word;
+  }
+  .alert.error{ display:block; background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
+  .loader{ display:inline-block; width:16px; height:16px; border:3px solid rgba(0,0,0,.2); border-top-color:#000; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-right:8px;}
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="logo">🔑</div>
+  <div class="title">Get Free Key</div>
+  <div class="subtitle">NOVA CHETS Premium Access</div>
+  
+  <div class="card">
+    <div id="alert" class="alert"></div>
+    
+    <div id="formSection">
+      <p style="font-size:12.5px; color:var(--muted); margin-bottom:20px; line-height:1.6;">
+        Click the button below to generate your working license key. The timer will automatically start on your first login in the app.
+      </p>
+      <button class="btn" id="getKeyBtn" onclick="generateKey()">GET FREE KEY</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAL9GGrvA2p-suTm2GqA32YYIHmz8RvyaM",
+  authDomain: "dexx-ter-pro.firebaseapp.com",
+  databaseURL: "https://dexx-ter-pro-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "dexx-ter-pro",
+  storageBucket: "dexx-ter-pro.firebasestorage.app",
+  messagingSenderId: "869110770961",
+  appId: "1:869110770961:web:911a09fb605b849e7170b0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const USERS_NODE = "FIXA_MODS";
+const DEVICE_STORAGE_KEY = "fixamods_device_id";
+const KEY_STORAGE_KEY = "fixamods_saved_key";
+
+function randomKey() {
+    const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const digits  = "0123456789";
+    let block2 = "", block3 = "";
+    for (let i = 0; i < 4; i++) block2 += letters[Math.floor(Math.random() * letters.length)];
+    for (let i = 0; i < 4; i++) block3 += digits[Math.floor(Math.random() * digits.length)];
+    return `NOVA-${block2}-${block3}-P2077`;
+}
+
+function getOrCreateDeviceId() {
+    let id = localStorage.getItem(DEVICE_STORAGE_KEY);
+    if (id) return id;
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+    let raw = "";
+    for (let i = 0; i < 12; i++) raw += chars[Math.floor(Math.random() * chars.length)];
+    id = `FIXA-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
+    localStorage.setItem(DEVICE_STORAGE_KEY, id);
+    return id;
+}
+
+window.generateKey = async function() {
+    const btn = document.getElementById("getKeyBtn");
+    const alertEl = document.getElementById("alert");
+    
+    alertEl.className = "alert"; // hide alert
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loader"></span> GENERATING...';
+    
+    try {
+        const deviceId = getOrCreateDeviceId();
+        let finalKey = "";
+
+        // Check saved key
+        const savedKey = localStorage.getItem(KEY_STORAGE_KEY);
+        if (savedKey) {
+            const snapshot = await get(ref(db, `${USERS_NODE}/${savedKey}`));
+            if (snapshot.exists()) {
+                finalKey = savedKey;
+            } else {
+                localStorage.removeItem(KEY_STORAGE_KEY);
+            }
+        }
+
+        // Generate new if not found
+        if (!finalKey) {
+            finalKey = randomKey();
+            const payload = {
+                username: "FreeUser_" + Math.floor(Math.random() * 10000),
+                status: "ACTIVE",
+                keyStatus: "ACTIVE",
+                validityMode: "duration",
+                maxDevices: 1,
+                devices: { [deviceId]: { addedAt: new Date().toISOString() } },
+                deviceId: deviceId,
+                durationValue: 24,
+                durationUnit: "hours",
+                validity: "",
+                firstLogin: "",
+                lastLogin: "",
+                createdAt: new Date().toISOString()
+            };
+            await set(ref(db, `${USERS_NODE}/${finalKey}`), payload);
+            localStorage.setItem(KEY_STORAGE_KEY, finalKey);
+        }
+
+        // Redirect to key.html
+        window.location.href = `key.html?key=${finalKey}&device=${deviceId}`;
+
+    } catch (err) {
+        console.error(err);
+        let msg = err.message;
+        if(msg.includes("PERMISSION_DENIED")) msg = "Firebase Rules me write allow karein (Rules update karein).";
+        alertEl.textContent = "❌ " + msg;
+        alertEl.className = "alert error";
+        
+        btn.innerHTML = 'key.html';
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>
