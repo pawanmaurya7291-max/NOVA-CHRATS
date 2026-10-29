@@ -1,294 +1,209 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#05070a" />
-<title>FIXAMODS • Get Free Key</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#05070a; --panel:rgba(255,255,255,.03); --border:rgba(255,255,255,.08);
-    --text:#eef2f7; --muted:#69708a; --accent:#00d68f; --accent-2:#22d3ee;
-    --green:#22c55e; --red:#ef4444; --radius:16px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
-  body{
-    background:var(--bg); color:var(--text); min-height:100vh; display:flex;
-    align-items:center; justify-content:center; padding:20px; overflow-x:hidden;
-    background-image: radial-gradient(800px 500px at 10% 0%, rgba(0,214,143,.15), transparent 60%),
-                      radial-gradient(600px 400px at 90% 100%, rgba(34,211,238,.15), transparent 60%);
-  }
-  .container{ width:100%; max-width:420px; z-index:10; }
-  .logo{
-    width:80px; height:80px; border-radius:24px; margin:0 auto 20px;
-    display:grid; place-items:center; font-size:36px;
-    background:linear-gradient(135deg, var(--accent), var(--accent-2));
-    box-shadow:0 8px 24px rgba(0,214,143,.3);
-  }
-  .title{
-    text-align:center; font-size:26px; font-weight:900; margin-bottom:8px;
-    background:linear-gradient(135deg, #fff 20%, var(--accent-2) 60%, var(--accent) 100%);
-    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-  }
-  .subtitle{
-    text-align:center; font-size:11px; color:var(--muted); letter-spacing:2px;
-    text-transform:uppercase; font-family:'JetBrains Mono',monospace; margin-bottom:30px;
-  }
-  .card{
-    padding:24px; border-radius:22px; background:var(--panel); border:1px solid var(--border);
-    backdrop-filter:blur(12px); box-shadow:0 12px 40px rgba(0,0,0,.5); text-align:center;
-  }
-  
-  .btn{
-    width:100%; padding:16px; border-radius:12px; border:none; cursor:pointer;
-    background:linear-gradient(135deg, var(--accent), var(--accent-2));
-    color:#02150f; font-weight:900; font-size:14px; letter-spacing:1px;
-    text-transform:uppercase; font-family:'JetBrains Mono',monospace;
-    transition:.2s; box-shadow:0 4px 16px rgba(0,214,143,.3);
-    text-decoration: none; display: inline-block; margin-top: 10px;
-  }
-  .btn:hover{ transform:translateY(-1px); opacity:.95; }
-  .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
-  
-  .alert{
-    padding:12px 14px; border-radius:12px; font-size:12.5px; font-weight:600;
-    margin-bottom:16px; display:none; line-height:1.5; word-break:break-word;
-  }
-  .alert.error{ display:block; background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
-  .alert.success{ display:block; background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.3); color:#86efac; }
-  .alert.warn{ display:block; background:rgba(245,158,11,.15); border:1px solid rgba(245,158,11,.3); color:#fcd34d; }
-  
-  #resultBox{ display:none; margin-top:20px; padding-top:20px; border-top:1px dashed var(--border); }
-  .key-box{
-    background:rgba(0,214,143,.1); border:1px solid rgba(0,214,143,.3);
-    padding:16px; border-radius:12px; text-align:center; margin-bottom:12px;
-  }
-  .key-box .lbl{ font-size:9px; font-weight:800; color:var(--accent); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:4px;}
-  .key-text{
-    font-family:'JetBrains Mono',monospace; font-size:20px; font-weight:900;
-    color:#fff; letter-spacing:1px; word-break:break-all;
-  }
-  .info-row{
-    display:flex; justify-content:space-between; font-size:11.5px;
-    padding:8px 0; border-bottom:1px solid var(--border);
-    font-family:'JetBrains Mono',monospace; text-align:left;
-  }
-  .info-row span:first-child{ color:var(--muted); }
-  .info-row span:last-child{ color:var(--text); font-weight:700; }
-  .copy-btn{
-    width:100%; padding:14px; margin-top:16px; border-radius:12px;
-    background:#0a0d12; border:1px solid var(--border); color:var(--text);
-    font-weight:800; font-size:13px; cursor:pointer; transition:.2s;
-    font-family:'JetBrains Mono',monospace;
-  }
-  .copy-btn:hover{ background:var(--border); }
-  .loader{ display:inline-block; width:16px; height:16px; border:3px solid rgba(0,0,0,.2); border-top-color:#000; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-right:8px;}
-  @keyframes spin { to { transform: rotate(360deg); } }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Key - Auto Copy</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            background: #1e293b;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #334155;
+        }
+
+        .icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #e2e8f0;
+        }
+
+        p {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        /* बटन का डिज़ाइन */
+        .get-key-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .get-key-btn:active {
+            transform: scale(0.96);
+        }
+
+        .get-key-btn:disabled {
+            background: #475569;
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+            color: #94a3b8;
+        }
+
+        /* स्टेटस मैसेज दिखाने के लिए */
+        .status {
+            margin-top: 25px;
+            font-size: 15px;
+            font-weight: 500;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            word-break: break-all;
+        }
+
+        .status.loading { background: #fef08a; color: #854d0e; }
+        .status.success { background: #bbf7d0; color: #166534; }
+        .status.error { background: #fecaca; color: #991b1b; }
+
+        /* जेनरेट हुआ लिंक दिखाने के लिए */
+        .link-box {
+            display: none;
+            margin-top: 20px;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            word-break: break-all;
+            color: #60a5fa;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="logo">🔑</div>
-  <div class="title">Get Free Key</div>
-  <div class="subtitle">FIXAMODS Premium Access</div>
-  
-  <div class="card">
-    <div id="alert" class="alert"></div>
-    
-    <div id="formSection">
-      <p style="font-size:12.5px; color:var(--muted); margin-bottom:20px; line-height:1.6;">
-        Click the button below to generate your working license key. You will be redirected to a shortener link first.
-      </p>
-      <button class="btn" id="getKeyBtn" onclick="generateShortLink()">GET FREE KEY</button>
+    <div class="container">
+        <div class="icon">🔗</div>
+        <h1>Link Shortener</h1>
+        <p>Click the button below to generate a short link. It will be copied to your clipboard automatically.</p>
+
+        <!-- बटन -->
+        <button class="get-key-btn" id="getKeyBtn">
+            GET KEY
+        </button>
+
+        <!-- स्टेटस (लोडिंग/सक्सेस/एरर) -->
+        <div class="status" id="statusText" style="display: none;"></div>
+
+        <!-- जेनरेट हुआ लिंक यहाँ दिखेगा -->
+        <div class="link-box" id="linkBox"></div>
     </div>
 
-    <div id="resultBox">
-      <div class="key-box">
-        <div class="lbl">YOUR WORKING KEY</div>
-        <div class="key-text" id="resKey">---</div>
-      </div>
-      
-      <div class="info-row">
-        <span>Duration</span>
-        <span id="resDuration">---</span>
-      </div>
-      <div class="info-row">
-        <span>Max Devices</span>
-        <span id="resDevices">1</span>
-      </div>
-      <div class="info-row" style="border-bottom:none">
-        <span>Timer Mode</span>
-        <span style="color:var(--green)">Starts on First Login</span>
-      </div>
+    <script>
+        const API_KEY = '880fc1d716bc2aa123a6d7dfc90b89991bb83a25'; // आपकी नई API Key
+        const TARGET_URL = 'https://google.com'; // जिस लिंक को शॉर्ट करना है
 
-      <button class="copy-btn" id="copyBtn" onclick="copyKey()">📋 COPY KEY</button>
-    </div>
-  </div>
-</div>
+        const btn = document.getElementById('getKeyBtn');
+        const statusText = document.getElementById('statusText');
+        const linkBox = document.getElementById('linkBox');
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+        // स्टेटस बदलने का फंक्शन
+        function updateStatus(message, type) {
+            statusText.style.display = 'flex';
+            statusText.textContent = message;
+            statusText.className = 'status ' + type;
+        }
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAL9GGrvA2p-suTm2GqA32YYIHmz8RvyaM",
-  authDomain: "dexx-ter-pro.firebaseapp.com",
-  databaseURL: "https://dexx-ter-pro-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "dexx-ter-pro",
-  storageBucket: "dexx-ter-pro.firebasestorage.app",
-  messagingSenderId: "869110770961",
-  appId: "1:869110770961:web:911a09fb605b849e7170b0"
-};
+        btn.addEventListener('click', async () => {
+            // बटन डिसेबल करें और लोडिंग दिखाएं
+            btn.disabled = true;
+            btn.innerHTML = 'Generating...';
+            linkBox.style.display = 'none';
+            updateStatus('⏳ Please wait, generating link...', 'loading');
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const USERS_NODE = "FIXA_MODS";
+            try {
+                // API URL तैयार करें
+                const apiUrl = `https://go.urlking.in/api?api=${API_KEY}&url=${encodeURIComponent(TARGET_URL)}`;
 
-// 🔥 Aapki API Key 🔥
-const URL_API_KEY = "247361796ae1cf2bb41fba597e4b19b46651fd63";
-// Destination URL (Jahan user redirect hoga)
-const DESTINATION_URL = "https://t.me/YourTelegramChannel"; 
+                // API को कॉल करें
+                const response = await fetch(apiUrl);
+                const data = await response.json();
 
-let currentKey = "";
+                console.log("API Response:", data); // डिबगिंग के लिए
 
-function showAlert(msg, type) {
-    const el = document.getElementById("alert");
-    el.textContent = msg;
-    el.className = "alert " + type;
-}
-function hideAlert() { document.getElementById("alert").className = "alert"; }
+                // अगर API में कोई एरर है
+                if (data.status === 'error') {
+                    throw new Error(data.message || 'API returned an error');
+                }
 
-function randomKey() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-    let raw = "";
-    for (let i = 0; i < 12; i++) raw += chars[Math.floor(Math.random() * chars.length)];
-    return `FIXA-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
-}
+                // शॉर्ट लिंक निकालें (shortenedUrl या shorturl)
+                const shortUrl = data.shortenedUrl || data.shorturl || data.short_url;
 
-// 1. Short Link Generate Function
-window.generateShortLink = async function() {
-    hideAlert();
-    const btn = document.getElementById("getKeyBtn");
-    btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span> CREATING LINK...';
-    
-    try {
-        const randomAlias = "fixa" + Math.floor(Math.random() * 1000000);
-        const targetUrl = `https://go.urlking.in/api?api=${URL_API_KEY}&url=${encodeURIComponent(DESTINATION_URL)}&alias=${randomAlias}`;
-        
-        // Using powerful proxy to fetch API
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-        
-        const response = await fetch(proxyUrl);
-        const textResponse = await response.text(); // Get raw text
-        
-        // Check if response has success in it
-        if(textResponse.includes('"status":"success"')) {
-            
-            // Extract the short URL from JSON string using regex
-            const match = textResponse.match(/"shortenedUrl"\s*:\s*"([^"]+)"/);
-            
-            if (match && match[1]) {
-                const shortUrl = match[1];
-                localStorage.setItem("fixa_verifying", "true");
-                window.location.href = shortUrl; // Redirect to shortener
-            } else {
-                throw new Error("URL not found in response");
+                if (!shortUrl) {
+                    throw new Error('Link not found in response');
+                }
+
+                // लिंक को कॉपी करें
+                await navigator.clipboard.writeText(shortUrl);
+
+                // UI अपडेट करें
+                btn.innerHTML = '✅ Copied!';
+                updateStatus('Link generated & copied successfully!', 'success');
+                
+                // लिंक को स्क्रीन पर भी दिखाएं
+                linkBox.style.display = 'block';
+                linkBox.textContent = shortUrl;
+
+                // 3 सेकंड बाद बटन वापस नॉर्मल कर दें
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = 'GET KEY';
+                }, 3000);
+
+            } catch (error) {
+                console.error(error);
+                // अगर एरर आए
+                btn.disabled = false;
+                btn.innerHTML = 'GET KEY';
+                updateStatus('❌ ' + error.message, 'error');
             }
-        } else {
-            throw new Error("API failed to generate link");
-        }
-    } catch (err) {
-        console.error("Error:", err);
-        showAlert("❌ Error: " + err.message, "error");
-        btn.innerHTML = 'GET FREE KEY';
-        btn.disabled = false;
-    }
-}
+        });
+    </script>
 
-// 2. Page Load par check karo ki user wapas aaya hai ya nahi
-window.addEventListener("load", async () => {
-    const isVerifying = localStorage.getItem("fixa_verifying");
-    
-    if(isVerifying === "true") {
-        document.getElementById("formSection").style.display = "none";
-        showAlert("⏳ Verifying your return... Please wait.", "warn");
-        
-        setTimeout(async () => {
-            showAlert("✅ Verification successful! Generating key...", "success");
-            await generateFinalKey();
-            localStorage.removeItem("fixa_verifying");
-        }, 2000); // 2 seconds delay so it looks like its checking
-    }
-});
-
-// 3. Final Key Generate Function
-async function generateFinalKey() {
-    try {
-        const newKey = randomKey();
-        const payload = {
-            username: "FreeUser_" + Math.floor(Math.random() * 10000),
-            status: "ACTIVE",
-            keyStatus: "ACTIVE",
-            validityMode: "duration",
-            maxDevices: 1,
-            devices: {},
-            durationValue: 24,
-            durationUnit: "hours", 
-            validity: "", 
-            firstLogin: "",
-            lastLogin: "",
-            createdAt: new Date().toISOString()
-        };
-
-        await set(ref(db, `${USERS_NODE}/${newKey}`), payload);
-        
-        currentKey = newKey;
-        
-        document.getElementById("resultBox").style.display = "block";
-        document.getElementById("resKey").textContent = newKey;
-        document.getElementById("resDuration").textContent = "24 hours";
-        document.getElementById("resDevices").textContent = "1";
-        showAlert("✅ Key Generated Successfully!", "success");
-        
-    } catch (err) {
-        console.error(err);
-        let msg = err.message;
-        if(msg.includes("PERMISSION_DENIED")) msg = "Firebase Rules me write allow karein.";
-        showAlert("❌ " + msg, "error");
-    }
-}
-
-// 4. Copy Function
-window.copyKey = function() {
-    if(!currentKey) return;
-    const textarea = document.createElement("textarea");
-    textarea.value = currentKey;
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-    
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            const btn = document.getElementById("copyBtn");
-            btn.textContent = "✅ COPIED!";
-            setTimeout(() => btn.textContent = "📋 COPY KEY", 2000);
-        } else {
-            alert("Copy failed. Please long press the key and copy manually.");
-        }
-    } catch (err) {
-        alert("Copy failed. Please long press the key and copy manually.");
-    }
-    document.body.removeChild(textarea);
-}
-</script>
 </body>
 </html>
