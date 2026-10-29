@@ -81,6 +81,12 @@
   .note{
     margin-top:14px; font-size:11px; color:var(--muted); text-align:center; line-height:1.5;
   }
+  .error-alert {
+    background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color:#fca5a5;
+    padding: 12px; border-radius: 12px; font-size: 12px; margin-bottom: 15px; display: none;
+  }
+  .loader{ display:inline-block; width:16px; height:16px; border:3px solid rgba(0,0,0,.2); border-top-color:#000; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-right:8px;}
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -91,55 +97,148 @@
   <div class="subtitle">NOVA CHETS Premium Access</div>
   
   <div class="card">
+    <div id="errorAlert" class="error-alert"></div>
+
     <div class="key-box">
       <div class="lbl">YOUR WORKING KEY</div>
-      <div class="key-text" id="resKey">---</div>
+      <div class="key-text" id="resKey">LOADING...</div>
     </div>
 
     <div class="device-box">
       <div class="lbl">YOUR DEVICE ID (FOR VERIFICATION)</div>
-      <div class="device-text" id="resDevice">---</div>
+      <div class="device-text" id="resDevice">LOADING...</div>
     </div>
     
     <div class="info-row">
       <span>Duration</span>
-      <span id="resDuration">---</span>
+      <span>24 hours</span>
     </div>
     <div class="info-row">
       <span>Max Devices</span>
-      <span id="resDevices">1</span>
+      <span>1</span>
     </div>
     <div class="info-row">
       <span>Timer Mode</span>
       <span style="color:var(--green)">Starts on First Login</span>
     </div>
 
-    <button class="copy-btn" onclick="copyKey()">📋 COPY KEY</button>
+    <button class="copy-btn" id="copyBtn" onclick="copyKey()" disabled>GENERATING...</button>
 
     <div class="note">Device ID sirf verification ke liye hai — app isse device verify karega. Key sirf isi device pe activate hogi.</div>
   </div>
 </div>
 
-<script>
-const params = new URLSearchParams(window.location.search);
-const key = params.get("key") || "NOVA-XXXX-0000-P2077";
-const device = params.get("device") || "FIXA-XXXX-XXXX-XXXX";
-const duration = params.get("duration") || "24 hours";
-const devices = params.get("devices") || "1";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-document.getElementById("resKey").textContent = key;
-document.getElementById("resDevice").textContent = device;
-document.getElementById("resDuration").textContent = duration;
-document.getElementById("resDevices").textContent = devices;
+const firebaseConfig = {
+  apiKey: "AIzaSyAL9GGrvA2p-suTm2GqA32YYIHmz8RvyaM",
+  authDomain: "dexx-ter-pro.firebaseapp.com",
+  databaseURL: "https://dexx-ter-pro-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "dexx-ter-pro",
+  storageBucket: "dexx-ter-pro.firebasestorage.app",
+  messagingSenderId: "869110770961",
+  appId: "1:869110770961:web:911a09fb605b849e7170b0"
+};
 
-function copyKey() {
-    if (key === "NOVA-XXXX-0000-P2077") {
-        alert("Error: Invalid Key!");
-        return;
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const USERS_NODE = "FIXA_MODS";
+const DEVICE_STORAGE_KEY = "fixamods_device_id";
+const KEY_STORAGE_KEY = "fixamods_saved_key";
+
+let currentKey = "";
+
+function randomKey() {
+    const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const digits  = "0123456789";
+    let block2 = "", block3 = "";
+    for (let i = 0; i < 4; i++) block2 += letters[Math.floor(Math.random() * letters.length)];
+    for (let i = 0; i < 4; i++) block3 += digits[Math.floor(Math.random() * digits.length)];
+    return `NOVA-${block2}-${block3}-P2077`;
+}
+
+function getOrCreateDeviceId() {
+    let id = localStorage.getItem(DEVICE_STORAGE_KEY);
+    if (id) return id;
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
+    let raw = "";
+    for (let i = 0; i < 12; i++) raw += chars[Math.floor(Math.random() * chars.length)];
+    id = `FIXA-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
+    localStorage.setItem(DEVICE_STORAGE_KEY, id);
+    return id;
+}
+
+// Jab page load ho toh key generate karo
+async function init() {
+    const keyEl = document.getElementById("resKey");
+    const deviceEl = document.getElementById("resDevice");
+    const btn = document.getElementById("copyBtn");
+    
+    try {
+        const deviceId = getOrCreateDeviceId();
+        deviceEl.textContent = deviceId;
+
+        // Pehle check karo saved key
+        const savedKey = localStorage.getItem(KEY_STORAGE_KEY);
+        if (savedKey) {
+            const snapshot = await get(ref(db, `${USERS_NODE}/${savedKey}`));
+            if (snapshot.exists()) {
+                currentKey = savedKey;
+                keyEl.textContent = savedKey;
+                btn.textContent = "📋 COPY KEY";
+                btn.disabled = false;
+                return;
+            } else {
+                localStorage.removeItem(KEY_STORAGE_KEY);
+            }
+        }
+
+        // Nayi key banao
+        const newKey = randomKey();
+        const payload = {
+            username: "FreeUser_" + Math.floor(Math.random() * 10000),
+            status: "ACTIVE",
+            keyStatus: "ACTIVE",
+            validityMode: "duration",
+            maxDevices: 1,
+            devices: { [deviceId]: { addedAt: new Date().toISOString() } },
+            deviceId: deviceId,
+            durationValue: 24,
+            durationUnit: "hours",
+            validity: "",
+            firstLogin: "",
+            lastLogin: "",
+            createdAt: new Date().toISOString()
+        };
+
+        await set(ref(db, `${USERS_NODE}/${newKey}`), payload);
+
+        localStorage.setItem(KEY_STORAGE_KEY, newKey);
+        currentKey = newKey;
+        
+        keyEl.textContent = newKey;
+        btn.textContent = "📋 COPY KEY";
+        btn.disabled = false;
+
+    } catch (err) {
+        console.error(err);
+        document.getElementById("errorAlert").style.display = "block";
+        document.getElementById("errorAlert").textContent = "Error: " + (err.message.includes("PERMISSION_DENIED") ? "Firebase Rules me write allow karein." : err.message);
+        keyEl.textContent = "ERROR";
+        btn.textContent = "ERROR";
     }
+}
+
+// Page load hone par function call karo
+window.onload = init;
+
+window.copyKey = function() {
+    if (!currentKey) return;
 
     const ta = document.createElement("textarea");
-    ta.value = key;
+    ta.value = currentKey;
     ta.style.position = "fixed";
     ta.style.opacity = "0";
     document.body.appendChild(ta);
@@ -149,14 +248,14 @@ function copyKey() {
     try {
         const successful = document.execCommand('copy');
         if (successful) {
-            const btn = document.querySelector('.copy-btn');
+            const btn = document.getElementById("copyBtn");
             btn.textContent = "✅ COPIED!";
             setTimeout(() => btn.textContent = "📋 COPY KEY", 2000);
         } else {
-            alert("Copy failed. Please long press the key and copy manually.");
+            alert("Copy failed. Long press the key to copy.");
         }
     } catch (err) {
-        alert("Copy failed. Please long press the key and copy manually.");
+        alert("Copy failed. Long press the key to copy.");
     }
     
     document.body.removeChild(ta);
