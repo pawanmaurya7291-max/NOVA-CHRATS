@@ -50,15 +50,6 @@
     transition:.2s; box-shadow:0 4px 16px rgba(0,214,143,.3);
   }
   .btn:hover{ transform:translateY(-1px); opacity:.95; }
-  .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
-  .alert{
-    padding:12px 14px; border-radius:12px; font-size:12.5px; font-weight:600;
-    margin-bottom:16px; display:none; line-height:1.5; word-break:break-word;
-  }
-  .alert.error{ display:block; background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.3); color:#fca5a5; }
-  .alert.success{ display:block; background:rgba(34,197,94,.15); border:1px solid rgba(34,197,94,.3); color:#86efac; }
-  .loader{ display:inline-block; width:16px; height:16px; border:3px solid rgba(0,0,0,.2); border-top-color:#000; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-right:8px;}
-  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
@@ -69,136 +60,13 @@
   <div class="subtitle">NOVA CHETS Premium Access</div>
   
   <div class="card">
-    <div id="alert" class="alert"></div>
-    
-    <div id="formSection">
-      <p style="font-size:12.5px; color:var(--muted); margin-bottom:20px; line-height:1.6;">
-        Click the button below to generate your working license key. The timer will automatically start on your first login in the app.
-      </p>
-      <button class="btn" id="getKeyBtn" onclick="generateKey()">GET FREE KEY</button>
-    </div>
+    <p style="font-size:12.5px; color:var(--muted); margin-bottom:20px; line-height:1.6;">
+      Click the button below to generate your working license key. The timer will automatically start on your first login in the app.
+    </p>
+    <!-- Button directly key.html par bhejega -->
+    <button class="btn" onclick="window.location.href='key.html'">GET FREE KEY</button>
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAL9GGrvA2p-suTm2GqA32YYIHmz8RvyaM",
-  authDomain: "dexx-ter-pro.firebaseapp.com",
-  databaseURL: "https://dexx-ter-pro-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "dexx-ter-pro",
-  storageBucket: "dexx-ter-pro.firebasestorage.app",
-  messagingSenderId: "869110770961",
-  appId: "1:869110770961:web:911a09fb605b849e7170b0"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const USERS_NODE = "FIXA_MODS";
-const DEVICE_STORAGE_KEY = "fixamods_device_id";
-const KEY_STORAGE_KEY = "fixamods_saved_key";
-
-function showAlert(msg, type) {
-    const el = document.getElementById("alert");
-    el.textContent = msg;
-    el.className = "alert " + type;
-}
-function hideAlert() { document.getElementById("alert").className = "alert"; }
-
-// 🔥 KEY FORMAT: NOVA-XZAW-1717-P2077 (P2077 FIXED) 🔥
-function randomKey() {
-    const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-    const digits  = "0123456789";
-    let block2 = "", block3 = "";
-    for (let i = 0; i < 4; i++) block2 += letters[Math.floor(Math.random() * letters.length)];
-    for (let i = 0; i < 4; i++) block3 += digits[Math.floor(Math.random() * digits.length)];
-    return `NOVA-${block2}-${block3}-P2077`;
-}
-
-// 🔥 PER-DEVICE FIXED DEVICE ID 🔥
-function getOrCreateDeviceId() {
-    let id = localStorage.getItem(DEVICE_STORAGE_KEY);
-    if (id) return id;
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
-    let raw = "";
-    for (let i = 0; i < 12; i++) raw += chars[Math.floor(Math.random() * chars.length)];
-    id = `FIXA-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
-    localStorage.setItem(DEVICE_STORAGE_KEY, id);
-    return id;
-}
-
-window.generateKey = async function() {
-    hideAlert();
-    const btn = document.getElementById("getKeyBtn");
-    btn.disabled = true;
-    btn.innerHTML = '<span class="loader"></span> GENERATING...';
-    
-    try {
-        const deviceId = getOrCreateDeviceId();
-
-        // 🔥 CHECK KARO KI PEHLE SE KEY SAVED HAI YA NAHI 🔥
-        const savedKey = localStorage.getItem(KEY_STORAGE_KEY);
-        if (savedKey) {
-            const snapshot = await get(ref(db, `${USERS_NODE}/${savedKey}`));
-            if (snapshot.exists()) {
-                const params = new URLSearchParams({
-                    key: savedKey,
-                    device: deviceId,
-                    duration: "24 hours",
-                    devices: "1"
-                });
-                window.open("key.html?" + params.toString(), "_blank");
-                btn.innerHTML = 'GET FREE KEY';
-                btn.disabled = false;
-                return;
-            } else {
-                localStorage.removeItem(KEY_STORAGE_KEY);
-            }
-        }
-
-        const newKey = randomKey();
-        const payload = {
-            username: "FreeUser_" + Math.floor(Math.random() * 10000),
-            status: "ACTIVE",
-            keyStatus: "ACTIVE",
-            validityMode: "duration",
-            maxDevices: 1,
-            devices: { [deviceId]: { addedAt: new Date().toISOString() } },
-            deviceId: deviceId,
-            durationValue: 24,
-            durationUnit: "hours",
-            validity: "",
-            firstLogin: "",
-            lastLogin: "",
-            createdAt: new Date().toISOString()
-        };
-
-        await set(ref(db, `${USERS_NODE}/${newKey}`), payload);
-
-        localStorage.setItem(KEY_STORAGE_KEY, newKey);
-
-        const params = new URLSearchParams({
-            key: newKey,
-            device: deviceId,
-            duration: "24 hours",
-            devices: "1"
-        });
-        window.open("key.html?" + params.toString(), "_blank");
-
-        btn.innerHTML = 'GET FREE KEY';
-        btn.disabled = false;
-        
-    } catch (err) {
-        console.error(err);
-        let msg = err.message;
-        if(msg.includes("PERMISSION_DENIED")) msg = "Firebase Rules me write allow karein (Rules update karein).";
-        showAlert("❌ " + msg, "error");
-        btn.innerHTML = 'GET FREE KEY';
-        btn.disabled = false;
-    }
-}
-</script>
 </body>
 </html>
