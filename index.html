@@ -1,209 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Key - Auto Copy</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0f172a, #1e293b);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            color: #fff;
-        }
-
-        .container {
-            background: #1e293b;
-            padding: 40px 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid #334155;
-        }
-
-        .icon {
-            font-size: 50px;
-            margin-bottom: 10px;
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-            color: #e2e8f0;
-        }
-
-        p {
-            font-size: 14px;
-            color: #94a3b8;
-            margin-bottom: 30px;
-            line-height: 1.5;
-        }
-
-        /* बटन का डिज़ाइन */
-        .get-key-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            padding: 18px 30px;
-            font-size: 20px;
-            font-weight: bold;
-            border-radius: 12px;
-            cursor: pointer;
-            width: 100%;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .get-key-btn:active {
-            transform: scale(0.96);
-        }
-
-        .get-key-btn:disabled {
-            background: #475569;
-            box-shadow: none;
-            cursor: not-allowed;
-            transform: none;
-            color: #94a3b8;
-        }
-
-        /* स्टेटस मैसेज दिखाने के लिए */
-        .status {
-            margin-top: 25px;
-            font-size: 15px;
-            font-weight: 500;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            word-break: break-all;
-        }
-
-        .status.loading { background: #fef08a; color: #854d0e; }
-        .status.success { background: #bbf7d0; color: #166534; }
-        .status.error { background: #fecaca; color: #991b1b; }
-
-        /* जेनरेट हुआ लिंक दिखाने के लिए */
-        .link-box {
-            display: none;
-            margin-top: 20px;
-            background: #0f172a;
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #334155;
-            word-break: break-all;
-            color: #60a5fa;
-            font-size: 14px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto Link Generator</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #6a11cb 100%);
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .container {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px; padding: 30px 25px;
+    width: 100%; max-width: 480px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  }
+  h1 { color: #fff; text-align: center; font-size: 24px; margin-bottom: 6px; }
+  .subtitle { color: rgba(255,255,255,0.7); text-align: center; font-size: 13px; margin-bottom: 25px; }
+  .btn {
+    width: 100%; padding: 14px; border: none; border-radius: 10px;
+    background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+    color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.25s;
+    box-shadow: 0 6px 18px rgba(37, 117, 252, 0.4);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(37, 117, 252, 0.55); }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .result-section {
+    margin-top: 25px; padding: 18px; border-radius: 14px;
+    background: rgba(0, 0, 0, 0.25); border: 1px dashed rgba(255,255,255,0.3);
+    display: none;
+  }
+  .result-section.show { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .result-label { color: #9be7a1; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .generated-link {
+    display: block; width: 100%; padding: 12px 14px;
+    background: rgba(255,255,255,0.12); border-radius: 8px;
+    color: #fff; font-size: 13px; word-break: break-all;
+    user-select: text; cursor: text;
+    border: 1px solid rgba(255,255,255,0.2);
+    font-family: 'Courier New', monospace;
+  }
+  .copy-btn {
+    margin-top: 12px; width: 100%; padding: 10px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.08); color: #fff;
+    border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background 0.25s;
+  }
+  .copy-btn:hover { background: rgba(255,255,255,0.18); }
+  .copy-btn.copied { background: #2ecc71; border-color: #2ecc71; }
+  .status { margin-top: 12px; font-size: 12px; text-align: center; min-height: 16px; color: #ffd166; }
+  .status.error { color: #ff6b6b; }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <div class="icon">🔗</div>
-        <h1>Link Shortener</h1>
-        <p>Click the button below to generate a short link. It will be copied to your clipboard automatically.</p>
+<div class="container">
+  <h1>🔗 Auto Link Generator</h1>
+  <p class="subtitle">Bas click karein, naya link automatic ban jayega</p>
 
-        <!-- बटन -->
-        <button class="get-key-btn" id="getKeyBtn">
-            GET KEY
-        </button>
+  <button class="btn" id="generateBtn">Generate New Link</button>
 
-        <!-- स्टेटस (लोडिंग/सक्सेस/एरर) -->
-        <div class="status" id="statusText" style="display: none;"></div>
+  <div class="result-section" id="resultSection">
+    <div class="result-label">✅ Generated Link (non-clickable)</div>
+    <!-- <a> tag nahi hai, isliye click karne par open nahi hoga -->
+    <div class="generated-link" id="generatedLink"></div>
+    <button class="copy-btn" id="copyBtn">📋 Copy Link</button>
+  </div>
 
-        <!-- जेनरेट हुआ लिंक यहाँ दिखेगा -->
-        <div class="link-box" id="linkBox"></div>
-    </div>
+  <div class="status" id="status"></div>
+</div>
 
-    <script>
-        const API_KEY = '880fc1d716bc2aa123a6d7dfc90b89991bb83a25'; // आपकी नई API Key
-        const TARGET_URL = 'https://google.com'; // जिस लिंक को शॉर्ट करना है
+<script>
+  const generateBtn   = document.getElementById('generateBtn');
+  const resultSection = document.getElementById('resultSection');
+  const generatedLink = document.getElementById('generatedLink');
+  const copyBtn       = document.getElementById('copyBtn');
+  const statusEl      = document.getElementById('status');
 
-        const btn = document.getElementById('getKeyBtn');
-        const statusText = document.getElementById('statusText');
-        const linkBox = document.getElementById('linkBox');
+  let lastGenerated = '';
 
-        // स्टेटस बदलने का फंक्शन
-        function updateStatus(message, type) {
-            statusText.style.display = 'flex';
-            statusText.textContent = message;
-            statusText.className = 'status ' + type;
-        }
+  const API_TOKEN = '880fc1d716bc2aa123a6d7dfc90b89991bb83a25';
+  const DESTINATION_URL = 'https://google.com'; // Apna target URL yahan daalein
 
-        btn.addEventListener('click', async () => {
-            // बटन डिसेबल करें और लोडिंग दिखाएं
-            btn.disabled = true;
-            btn.innerHTML = 'Generating...';
-            linkBox.style.display = 'none';
-            updateStatus('⏳ Please wait, generating link...', 'loading');
+  // CORS proxy list — agar ek fail ho to doosra try karega
+  const PROXIES = [
+    (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+  ];
 
-            try {
-                // API URL तैयार करें
-                const apiUrl = `https://go.urlking.in/api?api=${API_KEY}&url=${encodeURIComponent(TARGET_URL)}`;
+  async function tryFetch(url) {
+    let lastErr = null;
+    for (let i = 0; i < PROXIES.length; i++) {
+      try {
+        const proxied = PROXIES[i](url);
+        console.log(`Trying proxy ${i + 1}:`, proxied);
+        const res = await fetch(proxied);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        return data;
+      } catch (err) {
+        console.warn(`Proxy ${i + 1} failed:`, err.message);
+        lastErr = err;
+      }
+    }
+    throw lastErr || new Error('Sabhi proxies fail ho gaye');
+  }
 
-                // API को कॉल करें
-                const response = await fetch(apiUrl);
-                const data = await response.json();
+  generateBtn.addEventListener('click', async () => {
+    statusEl.textContent = '';
+    statusEl.classList.remove('error');
+    generateBtn.disabled = true;
+    statusEl.textContent = '⏳ Naya link generate ho raha hai...';
 
-                console.log("API Response:", data); // डिबगिंग के लिए
+    try {
+      const targetUrl = encodeURIComponent(DESTINATION_URL);
+      const apiUrl = `https://go.urlking.in/api?api=${API_TOKEN}&url=${targetUrl}`;
 
-                // अगर API में कोई एरर है
-                if (data.status === 'error') {
-                    throw new Error(data.message || 'API returned an error');
-                }
+      const data = await tryFetch(apiUrl);
+      console.log('URLKing response:', data);
 
-                // शॉर्ट लिंक निकालें (shortenedUrl या shorturl)
-                const shortUrl = data.shortenedUrl || data.shorturl || data.short_url;
+      if (data.status === 'success' && data.shortenedUrl) {
+        lastGenerated = data.shortenedUrl;
+        generatedLink.textContent = lastGenerated;
+        resultSection.classList.add('show');
+        statusEl.textContent = '✅ Naya link successfully generate ho gaya!';
+      } else {
+        throw new Error(data.message || 'Link generate nahi hua');
+      }
+    } catch (err) {
+      console.error(err);
+      statusEl.textContent = '❌ Error: ' + (err.message || 'Kuch galat ho gaya');
+      statusEl.classList.add('error');
+    } finally {
+      generateBtn.disabled = false;
+    }
+  });
 
-                if (!shortUrl) {
-                    throw new Error('Link not found in response');
-                }
-
-                // लिंक को कॉपी करें
-                await navigator.clipboard.writeText(shortUrl);
-
-                // UI अपडेट करें
-                btn.innerHTML = '✅ Copied!';
-                updateStatus('Link generated & copied successfully!', 'success');
-                
-                // लिंक को स्क्रीन पर भी दिखाएं
-                linkBox.style.display = 'block';
-                linkBox.textContent = shortUrl;
-
-                // 3 सेकंड बाद बटन वापस नॉर्मल कर दें
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.innerHTML = 'GET KEY';
-                }, 3000);
-
-            } catch (error) {
-                console.error(error);
-                // अगर एरर आए
-                btn.disabled = false;
-                btn.innerHTML = 'GET KEY';
-                updateStatus('❌ ' + error.message, 'error');
-            }
-        });
-    </script>
+  copyBtn.addEventListener('click', async () => {
+    if (!lastGenerated) return;
+    try {
+      await navigator.clipboard.writeText(lastGenerated);
+      copyBtn.textContent = '✅ Copied!';
+      copyBtn.classList.add('copied');
+      setTimeout(() => {
+        copyBtn.textContent = '📋 Copy Link';
+        copyBtn.classList.remove('copied');
+      }, 1800);
+    } catch {
+      statusEl.textContent = 'Copy nahi hua. Manually select karke copy karein.';
+      statusEl.classList.add('error');
+    }
+  });
+</script>
 
 </body>
 </html>
