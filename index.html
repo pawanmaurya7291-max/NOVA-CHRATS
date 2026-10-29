@@ -81,7 +81,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAL9GGrvA2p-suTm2GqA32YYIHmz8RvyaM",
@@ -98,6 +98,9 @@ const db = getDatabase(app);
 const USERS_NODE = "FIXA_MODS";
 const DEVICE_STORAGE_KEY = "fixamods_device_id";
 const KEY_STORAGE_KEY = "fixamods_saved_key";
+
+// 🔥 Aapka URL Shortener API Token 🔥
+const API_TOKEN = "247361796ae1cf2bb41fba597e4b19b46651fd63";
 
 function randomKey() {
     const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -123,58 +126,74 @@ window.generateKey = async function() {
     const btn = document.getElementById("getKeyBtn");
     const alertEl = document.getElementById("alert");
     
-    alertEl.className = "alert"; // hide alert
+    alertEl.className = "alert";
     btn.disabled = true;
     btn.innerHTML = '<span class="loader"></span> GENERATING...';
     
     try {
         const deviceId = getOrCreateDeviceId();
-        let finalKey = "";
 
-        // Check saved key
+        // 🔥 1. Purani key ko delete karo (taaki har baar nayi key bane) 🔥
         const savedKey = localStorage.getItem(KEY_STORAGE_KEY);
         if (savedKey) {
-            const snapshot = await get(ref(db, `${USERS_NODE}/${savedKey}`));
-            if (snapshot.exists()) {
-                finalKey = savedKey;
-            } else {
-                localStorage.removeItem(KEY_STORAGE_KEY);
-            }
+            await remove(ref(db, `${USERS_NODE}/${savedKey}`));
+            localStorage.removeItem(KEY_STORAGE_KEY);
         }
 
-        // Generate new if not found
-        if (!finalKey) {
-            finalKey = randomKey();
-            const payload = {
-                username: "FreeUser_" + Math.floor(Math.random() * 10000),
-                status: "ACTIVE",
-                keyStatus: "ACTIVE",
-                validityMode: "duration",
-                maxDevices: 1,
-                devices: { [deviceId]: { addedAt: new Date().toISOString() } },
-                deviceId: deviceId,
-                durationValue: 24,
-                durationUnit: "hours",
-                validity: "",
-                firstLogin: "",
-                lastLogin: "",
-                createdAt: new Date().toISOString()
-            };
-            await set(ref(db, `${USERS_NODE}/${finalKey}`), payload);
-            localStorage.setItem(KEY_STORAGE_KEY, finalKey);
+        // 🔥 2. Hamesha Nayi Key Generate Karo 🔥
+        const finalKey = randomKey();
+        
+        const payload = {
+            username: "FreeUser_" + Math.floor(Math.random() * 10000),
+            status: "ACTIVE",
+            keyStatus: "ACTIVE",
+            validityMode: "duration",
+            maxDevices: 1,
+            devices: { [deviceId]: { addedAt: new Date().toISOString() } },
+            deviceId: deviceId,
+            durationValue: 24,
+            durationUnit: "hours",
+            validity: "",
+            firstLogin: "",
+            lastLogin: "",
+            createdAt: new Date().toISOString()
+        };
+        
+        await set(ref(db, `${USERS_NODE}/${finalKey}`), payload);
+        localStorage.setItem(KEY_STORAGE_KEY, finalKey);
+
+        // 🔥 3. Short Link Generate Karo 🔥
+        btn.innerHTML = '<span class="loader"></span> SHORTENING...';
+        
+        const baseUrl = window.location.href.replace("index.html", "").replace(/\/$/, "");
+        const destinationUrl = `${baseUrl}/key.html?key=${finalKey}&device=${deviceId}`;
+        const apiUrl = `https://go.urlking.in/api?api=${API_TOKEN}&url=${encodeURIComponent(destinationUrl)}`;
+
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+            throw new Error("Shortener API failed. Check your API limits.");
         }
 
-        // Redirect to key.html
-        window.location.href = `key.html?key=${finalKey}&device=${deviceId}`;
+        const data = await response.json();
+        const shortUrl = data.shortenedUrl || data.shorturl || data.result;
+
+        if (!shortUrl) {
+            throw new Error("Short link generate nahi hua. API response check karein.");
+        }
+
+        // Short link open karo
+        window.location.href = shortUrl;
 
     } catch (err) {
         console.error(err);
         let msg = err.message;
-        if(msg.includes("PERMISSION_DENIED")) msg = "Firebase Rules me write allow karein (Rules update karein).";
+        if(msg.includes("PERMISSION_DENIED")) msg = "Firebase Rules me write allow karein.";
+        
         alertEl.textContent = "❌ " + msg;
         alertEl.className = "alert error";
         
-        btn.innerHTML = 'key.html';
+        btn.innerHTML = 'GET FREE KEY';
         btn.disabled = false;
     }
 }
