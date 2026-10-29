@@ -4,8 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#05070a" />
-<title>NOVA CHETS • Get Free Key</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔑</text></svg>">
+<title>Link Generator</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔗</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
@@ -63,67 +63,31 @@
 <body>
 
 <div class="container">
-  <div class="logo">🔑</div>
-  <div class="title">Get Free Key</div>
-  <div class="subtitle">NOVA CHETS Premium Access</div>
+  <div class="logo">🔗</div>
+  <div class="title">Short Link</div>
+  <div class="subtitle">URL Shortener</div>
   
   <div class="card">
     <div id="alert" class="alert"></div>
     
     <div id="formSection">
       <p style="font-size:12.5px; color:var(--muted); margin-bottom:20px; line-height:1.6;">
-        Click the button below to generate your working license key. The timer will automatically start on your first login in the app.
+        Click the button below to generate a secure short link and proceed.
       </p>
-      <button class="btn" id="getKeyBtn" onclick="generateKey()">GET FREE KEY</button>
+      <button class="btn" id="getLinkBtn" onclick="generateLink()">GENERATE LINK</button>
     </div>
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAL9GGrvA2p-suTm2GqA32YYIHmz8RvyaM",
-  authDomain: "dexx-ter-pro.firebaseapp.com",
-  databaseURL: "https://dexx-ter-pro-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "dexx-ter-pro",
-  storageBucket: "dexx-ter-pro.firebasestorage.app",
-  messagingSenderId: "869110770961",
-  appId: "1:869110770961:web:911a09fb605b849e7170b0"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const USERS_NODE = "FIXA_MODS";
-const DEVICE_STORAGE_KEY = "fixamods_device_id";
-const KEY_STORAGE_KEY = "fixamods_saved_key";
-
+<script>
 // 🔥 Aapka URL Shortener API Token 🔥
 const API_TOKEN = "247361796ae1cf2bb41fba597e4b19b46651fd63";
 
-function randomKey() {
-    const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-    const digits  = "0123456789";
-    let block2 = "", block3 = "";
-    for (let i = 0; i < 4; i++) block2 += letters[Math.floor(Math.random() * letters.length)];
-    for (let i = 0; i < 4; i++) block3 += digits[Math.floor(Math.random() * digits.length)];
-    return `NOVA-${block2}-${block3}-P2077`;
-}
+// 🔥 Yahan apna Destination URL daalein (Jahan user ko bhejna hai) 🔥
+const DESTINATION_URL = "https://google.com"; 
 
-function getOrCreateDeviceId() {
-    let id = localStorage.getItem(DEVICE_STORAGE_KEY);
-    if (id) return id;
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789";
-    let raw = "";
-    for (let i = 0; i < 12; i++) raw += chars[Math.floor(Math.random() * chars.length)];
-    id = `FIXA-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
-    localStorage.setItem(DEVICE_STORAGE_KEY, id);
-    return id;
-}
-
-window.generateKey = async function() {
-    const btn = document.getElementById("getKeyBtn");
+window.generateLink = async function() {
+    const btn = document.getElementById("getLinkBtn");
     const alertEl = document.getElementById("alert");
     
     alertEl.className = "alert";
@@ -131,69 +95,33 @@ window.generateKey = async function() {
     btn.innerHTML = '<span class="loader"></span> GENERATING...';
     
     try {
-        const deviceId = getOrCreateDeviceId();
-
-        // 🔥 1. Purani key ko delete karo (taaki har baar nayi key bane) 🔥
-        const savedKey = localStorage.getItem(KEY_STORAGE_KEY);
-        if (savedKey) {
-            await remove(ref(db, `${USERS_NODE}/${savedKey}`));
-            localStorage.removeItem(KEY_STORAGE_KEY);
-        }
-
-        // 🔥 2. Hamesha Nayi Key Generate Karo 🔥
-        const finalKey = randomKey();
-        
-        const payload = {
-            username: "FreeUser_" + Math.floor(Math.random() * 10000),
-            status: "ACTIVE",
-            keyStatus: "ACTIVE",
-            validityMode: "duration",
-            maxDevices: 1,
-            devices: { [deviceId]: { addedAt: new Date().toISOString() } },
-            deviceId: deviceId,
-            durationValue: 24,
-            durationUnit: "hours",
-            validity: "",
-            firstLogin: "",
-            lastLogin: "",
-            createdAt: new Date().toISOString()
-        };
-        
-        await set(ref(db, `${USERS_NODE}/${finalKey}`), payload);
-        localStorage.setItem(KEY_STORAGE_KEY, finalKey);
-
-        // 🔥 3. Short Link Generate Karo 🔥
-        btn.innerHTML = '<span class="loader"></span> SHORTENING...';
-        
-        const baseUrl = window.location.href.replace("index.html", "").replace(/\/$/, "");
-        const destinationUrl = `${baseUrl}/key.html?key=${finalKey}&device=${deviceId}`;
-        const apiUrl = `https://go.urlking.in/api?api=${API_TOKEN}&url=${encodeURIComponent(destinationUrl)}`;
+        // Shortener API ko call karna
+        const apiUrl = `https://go.urlking.in/api?api=${API_TOKEN}&url=${encodeURIComponent(DESTINATION_URL)}`;
 
         const response = await fetch(apiUrl);
         
         if (!response.ok) {
-            throw new Error("Shortener API failed. Check your API limits.");
+            throw new Error("API failed. Check your API limits.");
         }
 
         const data = await response.json();
+        
+        // URLKing API response handle karna
         const shortUrl = data.shortenedUrl || data.shorturl || data.result;
 
         if (!shortUrl) {
             throw new Error("Short link generate nahi hua. API response check karein.");
         }
 
-        // Short link open karo
+        // Short link open karo (Redirect)
         window.location.href = shortUrl;
 
     } catch (err) {
         console.error(err);
-        let msg = err.message;
-        if(msg.includes("PERMISSION_DENIED")) msg = "Firebase Rules me write allow karein.";
-        
-        alertEl.textContent = "❌ " + msg;
+        alertEl.textContent = "❌ " + err.message;
         alertEl.className = "alert error";
         
-        btn.innerHTML = 'GET FREE KEY';
+        btn.innerHTML = 'GENERATE LINK';
         btn.disabled = false;
     }
 }
